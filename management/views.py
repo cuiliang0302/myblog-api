@@ -121,7 +121,7 @@ class ServerMonitoringAPIView(APIView):
     服务器监控信息
     """
 
-    # permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdminUser,)
 
     @staticmethod
     def get(request):
@@ -143,8 +143,8 @@ class ServerInfoAPIView(APIView):
 
     permission_classes = (IsAdminUser,)
 
-    @staticmethod
-    def get(request):
+    @cache_response()
+    def get(self, request):
         manufacturer = settings.ECS_MANUFACTURER
         if manufacturer == 'aliyun':
             aliyun = Aliyun(settings.CLOUD['ECS']['ALIYUN']['KEY'], settings.CLOUD['ECS']['ALIYUN']['SECRET'])
