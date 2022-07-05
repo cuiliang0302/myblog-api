@@ -381,13 +381,13 @@ class Aliyun:
         result = dict()
         for i in metric_list:
             if i == 'CPUUtilization':
-                result['cpu'] = self.__ecs_metric(i)
+                result['cpu_rate'] = self.__ecs_metric(i)
             elif i == 'memory_usedutilization':
-                result['memory'] = self.__ecs_metric(i)
+                result['memory_rate'] = self.__ecs_metric(i)
             elif i == 'diskusage_utilization':
-                result['disk'] = self.__ecs_metric(i)
+                result['disk_rate'] = self.__ecs_metric(i)
             else:
-                result['load'] = self.__ecs_metric(i)
+                result['load_15'] = self.__ecs_metric(i)
         return result
 
     def cdn_refresh(self, url):
@@ -489,13 +489,13 @@ class Tencent:
         result = dict()
         for i in metric_list:
             if i == 'CPUUsage':
-                result['cpu'] = self.__ecs_metric(i)
+                result['cpu_rate'] = self.__ecs_metric(i)
             elif i == 'MemUsage':
-                result['memory'] = self.__ecs_metric(i)
+                result['memory_rate'] = self.__ecs_metric(i)
             elif i == 'CvmDiskUsage':
-                result['disk'] = self.__ecs_metric(i)
+                result['disk_rate'] = self.__ecs_metric(i)
             else:
-                result['load'] = self.__ecs_metric(i)
+                result['load_15'] = self.__ecs_metric(i)
         return result
 
     def cdn_refresh(self, url):
