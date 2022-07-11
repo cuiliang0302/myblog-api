@@ -15,4 +15,4 @@ WORKDIR /opt/myblog_api/
 EXPOSE 8888
 ENV PROJECT_ENV prod
 ENV DJANGO_SETTINGS_MODULE myblog_api.settings
-CMD ["python3.10","manage.py","crontab","&","uwsgi","--ini","/opt/myblog_api/uwsgi.ini"]
+CMD ["uwsgi","--ini","/opt/myblog_api/uwsgi.ini","&&","python3.10","manage.py","crontab"]
