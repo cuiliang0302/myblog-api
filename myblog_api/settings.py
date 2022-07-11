@@ -186,6 +186,10 @@ REST_FRAMEWORK_EXTENSIONS = {
     # 缓存存储
     'DEFAULT_USE_CACHE': 'default'
 }
+# 定时任务配置
+APSCHEDULER_TIMEZONE = 'Asia/Shanghai'
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+APSCHEDULER_RUN_NOW_TIMEOUT = 60
 
 if env_name == 'dev':  # [开发环境]
     # 静态资源目录

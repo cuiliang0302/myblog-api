@@ -1,3 +1,15 @@
+import os
+import django
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "DRF.settings")
+# django.setup()
+from django.conf import settings
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
+from django.core.management.base import BaseCommand
+from django_apscheduler.jobstores import DjangoJobStore
+from django_apscheduler.models import DjangoJobExecution
+from django_apscheduler import util
+from loguru import logger
 import re
 import subprocess
 from datetime import datetime
@@ -15,12 +27,7 @@ from django.contrib.sites.models import Site
 
 
 def sitemap_job():
-    """
-    生成网站地图
-    :return:
-    """
-    print("生成sitemap执行时间：", datetime.now())
-    logger.info('定时生成sitemap任务执行时间：{}'.format(datetime.now()))
+    logger.info('定时生成sitemap任务开始执行')
     domain = Site.objects.get_current().domain
     url_list = []
     # 生成文章链接
@@ -38,8 +45,7 @@ def sitemap_job():
             file_object.write(url_list[i] + '\n')
         file_object.write(domain + '/')
     file_object.close()
-    print("sitemap生成完成！")
-    logger.info('sitemap生成完成，执行时间：{}'.format(datetime.now()))
+    logger.info('定时生成sitemap任务执行完毕')
 
 
 def check_ssl_job():
@@ -47,10 +53,10 @@ def check_ssl_job():
     网站ssl证书检查
     :return:
     """
-    print("检查ssl证书执行时间：", datetime.now())
-    logger.info('检查ssl证书执行时间：{}'.format(datetime.now()))
+    logger.info('检查ssl证书任务开始执行')
     domain = Site.objects.get_current().domain
-    cmd = f"curl -Ivs {domain} --connect-timeout 10"
+    # print(domain)
+    cmd = f"curl -Ivs https://{domain} --connect-timeout 10"
     exitcode, output = subprocess.getstatusoutput(cmd)
     # 证书开始日期
     start_match = re.search('start date: (.*)', output)
@@ -90,56 +96,57 @@ def check_ssl_job():
         msg = EmailMultiAlternatives(subject, content, from_email, [admin_email])
         msg.content_subtype = "html"
         msg.send()
-    print("ssl证书检查完成！，还剩", remain_day, "天")
     logger.info('ssl证书检查完成，还剩{0}天，执行时间：{1}'.format(remain_day, datetime.now()))
 
 
+@util.close_old_connections
 def delete_old_job_executions(max_age=604_800):
-    # 清理过期任务
-    """This job deletes all apscheduler job executions older than `max_age` from the database."""
     DjangoJobExecution.objects.delete_old_job_executions(max_age)
-    logger.info('定时清理任务执行时间：{}'.format(datetime.now()))
 
 
-# 实例化调度器
-scheduler = BackgroundScheduler(timezone=settings.TIME_ZONE)
-# 调度器使用DjangoJobStore()
-scheduler.add_jobstore(DjangoJobStore(), "default")
-# 设置定时任务，选择方式为interval，时间间隔为10s
-scheduler.add_job(
-    sitemap_job,
-    trigger=CronTrigger(hour="02", minute="00"),  # Every day
-    id="sitemap_job",  # The `id` assigned to each job MUST be unique
-    max_instances=5,
-    replace_existing=True,
-    misfire_grace_time=900,
-)
-scheduler.add_job(
-    check_ssl_job,
-    trigger=CronTrigger(hour="01", minute="00"),  # Every day
-    id="check_ssl_job",  # The `id` assigned to each job MUST be unique
-    max_instances=5,
-    replace_existing=True,
-    misfire_grace_time=900,
-)
-print("成功添加任务")
-scheduler.add_job(
-    delete_old_job_executions,
-    trigger=CronTrigger(
-        day_of_week="mon", hour="00", minute="00"
-    ),  # Midnight on Monday, before start of the next work week.
-    id="delete_old_job_executions",
-    max_instances=1,
-    replace_existing=True,
-)
-print("成功添加周期任务: 'delete_old_job_executions'")
-try:
-    print("开始执行调度任务...")
-    scheduler.start()
-    logger.info('开始执行调度任务：{}'.format(datetime.now()))
-except (KeyboardInterrupt, SystemExit):
-    print("停止执行调度任务...")
-    scheduler.shutdown()
-    logger.info('停止执行调度任务：{}'.format(datetime.now()))
-logging.basicConfig()
-logging.getLogger('apscheduler').setLevel(logging.DEBUG)
+class Command(BaseCommand):
+    help = "Runs APScheduler."
+
+    def handle(self, *args, **options):
+        scheduler = BlockingScheduler(timezone=settings.TIME_ZONE)
+        scheduler.add_jobstore(DjangoJobStore(), "default")
+
+        scheduler.add_job(
+            sitemap_job,
+            trigger=CronTrigger(hour="02", minute="00"),  # Every 10 seconds
+            id="sitemap_job",  # The `id` assigned to each job MUST be unique
+            max_instances=5,
+            replace_existing=True,
+            misfire_grace_time=60
+        )
+        logger.info("添加sitemap_job任务成功")
+
+        scheduler.add_job(
+            check_ssl_job,
+            trigger=CronTrigger(hour="01", minute="00"),  # Every 10 seconds
+            # trigger=CronTrigger(second='*/10'),  # Every 10 seconds
+            id="check_ssl_job",  # The `id` assigned to each job MUST be unique
+            max_instances=5,
+            replace_existing=True,
+            misfire_grace_time=60
+        )
+        logger.info("添加check_ssl_job任务成功")
+
+        scheduler.add_job(
+            delete_old_job_executions,
+            trigger=CronTrigger(
+                day_of_week="mon", hour="00", minute="00"
+            ),  # Midnight on Monday, before start of the next work week.
+            id="delete_old_job_executions",
+            max_instances=1,
+            replace_existing=True
+        )
+        logger.info("添加delete_old_job_executions任务成功")
+
+        try:
+            logger.info("scheduler开始执行...")
+            scheduler.start()
+        except KeyboardInterrupt:
+            logger.info("scheduler停止执行...")
+            scheduler.shutdown()
+            logger.info("Scheduler成功停止!")
