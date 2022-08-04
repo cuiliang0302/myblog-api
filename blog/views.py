@@ -4,7 +4,6 @@ from django.contrib.sites.models import Site
 from rest_framework import viewsets, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 import qrcode
-from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
@@ -13,7 +12,7 @@ from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
 from django.db.models import Max, Min
-from public.permissions import AdminAllOrGuestGetPat
+from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet
 
 
 class ArticleModelViewSet(viewsets.ModelViewSet):
@@ -98,7 +97,7 @@ class CatalogueAPIView(APIView):
     """
     博客笔记目录
     """
-    permission_classes = (IsAdminUser,)
+    permission_classes = (AdminAllOrGuestGet,)
 
     @staticmethod
     def get(request, note_id):
