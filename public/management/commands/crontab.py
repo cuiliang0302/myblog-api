@@ -1,26 +1,15 @@
-import os
-import django
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "DRF.settings")
-# django.setup()
-from django.conf import settings
 from apscheduler.schedulers.blocking import BlockingScheduler
-from apscheduler.triggers.cron import CronTrigger
 from django.core.management.base import BaseCommand
-from django_apscheduler.jobstores import DjangoJobStore
-from django_apscheduler.models import DjangoJobExecution
 from django_apscheduler import util
-from loguru import logger
 import re
 import subprocess
 from datetime import datetime
-from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from django.core.mail import EmailMultiAlternatives
 from django_apscheduler.jobstores import DjangoJobStore
 from django_apscheduler.models import DjangoJobExecution
 from django.conf import settings
 from loguru import logger
-import logging
 from account.models import UserInfo
 from blog.models import Article, Section
 from django.contrib.sites.models import Site

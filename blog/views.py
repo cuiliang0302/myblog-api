@@ -4,6 +4,7 @@ from django.contrib.sites.models import Site
 from rest_framework import viewsets, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 import qrcode
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
@@ -97,6 +98,7 @@ class CatalogueAPIView(APIView):
     """
     博客笔记目录
     """
+    permission_classes = (IsAdminUser,)
 
     @staticmethod
     def get(request, note_id):
@@ -157,6 +159,11 @@ class SectionModelViewSet(viewsets.ModelViewSet):
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    # # 重新create方法，关联笔记目录
+    # def perform_create(self, serializer):
+    #     print(serializer.data)
+    #     # serializer.save()
 
 
 class ContextAPIView(APIView):
@@ -308,7 +315,8 @@ class QRcodeAPIView(APIView):
         icon = icon.convert("RGBA")
         img.paste(icon, (w, h), icon)
         img.save(QRcode)  # 保存二维码qr.png
-        return Response({'url': Site.objects.get_current().domain + '/static/file/QRcode.png'}, status=status.HTTP_200_OK)
+        return Response({'url': Site.objects.get_current().domain + '/static/file/QRcode.png'},
+                        status=status.HTTP_200_OK)
 
 
 class CatalogueModelViewSet(viewsets.ModelViewSet):

@@ -1,5 +1,5 @@
 #! /bin/bash
-mkdir -p logs
+mkdir logs
 echo "正在启动后端API服务……"
 nohup uwsgi --ini uwsgi.ini > logs/django.log 2>&1 &
 sleep 5
