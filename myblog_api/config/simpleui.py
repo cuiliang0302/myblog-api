@@ -9,12 +9,12 @@ SIMPLEUI_HOME_ACTION = False
 
 # 自定义admin首页
 SIMPLEUI_HOME_PAGE = '/defined/#index/'
-SIMPLEUI_HOME_TITLE = '系统主页'
+SIMPLEUI_HOME_TITLE = '数据看板'
 SIMPLEUI_HOME_ICON = 'fa fa-home'
 # 自定义菜单
 SIMPLEUI_CONFIG = {
     'system_keep': True,
-    'menu_display': ['内容管理', '用户管理', '网站管理', '行为记录', '其他工具', 'Django APScheduler'],
+    'menu_display': ['内容管理', '用户管理', '网站管理', '行为记录', '其他工具', '计划任务'],
     'menus': [
         {
             'name': '其他工具',
@@ -29,6 +29,22 @@ SIMPLEUI_CONFIG = {
                     'name': '图片裁剪',
                     'icon': 'fas fa-file-image',
                     'url': '/defined/#/image/'
+                }
+            ]
+        },
+        {
+            'name': '计划任务',
+            'icon': 'fas fa-tasks',
+            'models': [
+                {
+                    'name': '任务列表',
+                    'icon': 'fas fa-list',
+                    'url': '/admin/django_apscheduler/djangojob/'
+                },
+                {
+                    'name': '执行历史',
+                    'icon': 'fas fa-history',
+                    'url': '/admin/django_apscheduler/djangojobexecution/'
                 }
             ]
         }
