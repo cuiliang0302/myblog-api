@@ -84,6 +84,7 @@ class Section(models.Model):
     class Meta:
         verbose_name = '笔记内容'
         verbose_name_plural = verbose_name
+        ordering = ("-created_time",)
         indexes = [models.Index(fields=['title', 'note', 'created_time'])]
         # 创建index索引
 
