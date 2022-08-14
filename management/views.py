@@ -160,7 +160,7 @@ class SiteEchartsAPIView(APIView):
     """
     echarts获取网站数据接口
     """
-    permission_classes = (IsAdminUser,)
+    # permission_classes = (IsAdminUser,)
 
     @staticmethod
     def get(request):

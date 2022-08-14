@@ -4,13 +4,14 @@
 本项目使用Python3.10+Django3.2+Django REST Framework3.13组合开发的博客系统API后端，后端使用MySQL存储+Redis缓存，使用docker构建镜像实现自动发布，详细介绍可访问[崔亮的博客关于页](https://www.cuiliangblog.cn/about)
 
 ### 接口文档
-* markdown文档下载地址：[API接口markdown文档](https://api.cuiliangblog.cn/static/myblog.md)
-* 在线接口文档：链接: https://www.apifox.cn/apidoc/shared-1cf3e9c2-ea9a-4463-983f-7b97197dc725  访问密码 : b7sWI26j 
+* markdown接口文档下载地址：[API接口markdown文档](https://api.cuiliangblog.cn/static/myblog.md)
+* swagger接口文档查看地址： [swagger接口文档](https://api.cuiliangblog.cn/)
+* Apifox在线接口文档查看地址：[Apifox在线接口文档](https://www.apifox.cn/apidoc/shared-1cf3e9c2-ea9a-4463-983f-7b97197dc725) 访问密码 : b7sWI26j 
 
 ### 功能模块
 * 内容管理
     
-    包含博客文章详细内容查看、文章分类、文章标签、博客笔记、笔记目录、猜你喜欢、文章归档等功能。
+    包含博客文章、文章分类、文章标签、博客笔记、笔记目录、猜你喜欢、文章归档等功能。
 * 网站管理
     
     包含轮播图、关于页、友情链接、博主信息、网站配置、数据统计等功能。
