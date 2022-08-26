@@ -79,8 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myblog_api.wsgi.application'
 
-# Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 # 登录认证后端配置
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -97,8 +95,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
 SITE_ID = 1
 LANGUAGE_CODE = 'zh-Hans'
 
@@ -110,14 +106,8 @@ USE_L10N = True
 
 USE_TZ = True
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
 # 静态文件存放位置
 STATIC_URL = '/static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -179,23 +169,13 @@ DATABASES = {
 CACHES = {
     'default': env.cache(),
 }
-# DRF缓存扩展配置
-REST_FRAMEWORK_EXTENSIONS = {
-    # 默认缓存时间
-    'DEFAULT_CACHE_RESPONSE_TIMEOUT': env.int('DEFAULT_CACHE_RESPONSE_TIMEOUT'),
-    # 缓存存储
-    'DEFAULT_USE_CACHE': 'default'
-}
+
 # 定时任务配置
 APSCHEDULER_TIMEZONE = 'Asia/Shanghai'
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 APSCHEDULER_RUN_NOW_TIMEOUT = 60
 
 if env_name == 'dev':  # [开发环境]
-    # 静态资源目录
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, "static")
-    ]
+    from myblog_api.config.develop import *
 else:  # [生产环境]
-    # 指定样式收集目录
-    STATIC_ROOT = os.path.join(BASE_DIR, "static")
+    from myblog_api.config.product import *
