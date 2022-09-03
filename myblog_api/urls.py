@@ -29,8 +29,7 @@ sitemaps = {
 urlpatterns = [
     path('admin/', admin.site.urls),
     # admin管理页
-    path('sitemap.xml', sitemap, {'sitemaps': sitemaps},
-         name='django.contrib.sitemaps.views.sitemap'),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     # 网站地图
     path('feed.xml', RssFeed(), name='rss'),
     # RSS订阅

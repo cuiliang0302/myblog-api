@@ -86,6 +86,8 @@ class Info(models.Model):
     email = models.EmailField('邮箱', max_length=50)
     github = models.URLField('GitHub')
     gitee = models.URLField('码云')
+    vx_public = models.URLField('微信公众号二维码')
+    rss = models.URLField('RSS订阅地址')
     qq = models.CharField('QQ', max_length=15)
     qq_img = models.URLField('QQ二维码')
     wechat = models.CharField('微信', max_length=20)
