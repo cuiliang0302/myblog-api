@@ -324,3 +324,4 @@ class CatalogueModelViewSet(viewsets.ModelViewSet):
     """
     queryset = Catalogue.objects.all()
     serializer_class = CatalogueSerializer
+

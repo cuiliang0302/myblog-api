@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import requests
+from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import render
@@ -110,3 +111,13 @@ class AreaDataAPIView(APIView):
     @staticmethod
     def get(request):
         return Response({'areaList': areaList}, status=status.HTTP_200_OK)
+
+
+class ArticleLink(APIView):
+    """
+    获取文章RSS链接
+    """
+
+    @staticmethod
+    def get(request, article_id):
+        return "https://" + Site.objects.get(id=1) + "/" + article_id

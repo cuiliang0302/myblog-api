@@ -16,10 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.static import serve
-from public.views import doc, defined
+from public.views import doc, defined, ArticleLink
 from django.conf import settings
 from django.contrib.sitemaps.views import sitemap
 from public.sitemaps import ArticleSitemap, SectionSitemap
+from public.feeds import RssFeed
 
 sitemaps = {
     'blog': ArticleSitemap,
@@ -31,6 +32,10 @@ urlpatterns = [
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps},
          name='django.contrib.sitemaps.views.sitemap'),
     # 网站地图
+    path('feed.xml', RssFeed(), name='rss'),
+    # RSS订阅
+    path('detail/article/<int:article_id>', ArticleLink.as_view(), name="article_link"),
+    # 获取文章RSS链接
     re_path('static/(?P<path>.*)', serve, {'document_root': settings.STATIC_ROOT}, name='static_url'),
     # 媒体资源
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),

@@ -9,6 +9,7 @@ class UserInfoAdmin(admin.ModelAdmin):
     # 文章列表里显示想要显示的字段
     list_display_links = ('username', 'phone', 'email')
     # 设置哪些字段可以点击进入编辑界面
+    search_fields = ('username',)
 
 
 # 用户来源
