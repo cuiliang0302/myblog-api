@@ -79,7 +79,7 @@ class SiteStatisticsAPIView(APIView):
         # 文章总数
         data_count['article'] = Article.objects.filter(is_release=True).count()
         # 笔记总数
-        data_count['section'] = Section.objects.filter(is_release=True).count()
+        data_count['section'] = Section.objects.all().count()
         # 文章分类数
         data_count['category'] = Category.objects.count()
         # 笔记分类数
