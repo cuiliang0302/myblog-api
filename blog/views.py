@@ -1,18 +1,21 @@
 import random
 from PIL import Image
 from django.contrib.sites.models import Site
+from loguru import logger
 from rest_framework import viewsets, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 import qrcode
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
+from django.conf import settings
+from public.tools import Yuque
 from public.utils import MyPageNumber
 from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
 from django.db.models import Max, Min
-from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet
+from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet, AdminAllOrGuestGetPost
 
 
 class ArticleModelViewSet(viewsets.ModelViewSet):
@@ -104,43 +107,28 @@ class CatalogueAPIView(APIView):
         """
         获取指定ID笔记的目录结构
         """
-        catalogueFather = Catalogue.objects.filter(note=note_id).filter(level=1)
-        catalogue = []
-        for father in catalogueFather:
-            catalogue_father = dict()
-            catalogue_father['id'] = father.id
-            catalogue_father['name'] = father.name
-            catalogueChild = Catalogue.objects.filter(note=note_id).filter(father=father.id)
-            child_list = []
-            for child in catalogueChild:
-                catalogue_child = dict()
-                catalogue_child['id'] = child.id
-                catalogue_child['name'] = child.name
-                catalogue_child['section_id'] = child.section.id
-                child_list.append(catalogue_child)
-            catalogue_father['child'] = child_list
-            catalogue.append(catalogue_father)
-        return Response(catalogue, status=status.HTTP_200_OK)
-
-    @staticmethod
-    def put(request, note_id):
-        """
-        编排指定ID笔记的目录结构
-        """
-        catalogue_data = request.data['value']
-        if catalogue_data:
-            Catalogue.objects.filter(note_id=note_id).delete()
-            for i in range(len(catalogue_data)):
-                father = Catalogue.objects.create(note_id=note_id, name=catalogue_data[i]['name'], level=1, order=i)
-                section_list = []
-                for j in range(len(catalogue_data[i]['children'])):
-                    section_list.append(
-                        Catalogue(note_id=note_id, name=catalogue_data[i]['children'][j]['name'], order=j, level=2,
-                                  father=father.id, section_id=catalogue_data[i]['children'][j]['section_id']))
-                Catalogue.objects.bulk_create(section_list)
-            return Response({'msg': '目录编排成功'}, status=status.HTTP_200_OK)
-        else:
-            return Response({'msg': '请求参数异常'}, status=status.HTTP_400_BAD_REQUEST)
+        result = []
+        catalogue_list = Catalogue.objects.filter(note=note_id).first().catalogue
+        father_id = 0
+        for i in range(len(catalogue_list)):
+            # logger.error(catalogue_list[i])
+            # 一级目录
+            if catalogue_list[i]['type'] == 'TITLE':
+                father = dict()
+                father['id'] = catalogue_list[i]['uuid']
+                father['name'] = catalogue_list[i]['title']
+                father['child'] = []
+                result.append(father)
+                father_id = father_id + 1
+            # 二级文章标题
+            else:
+                child = dict()
+                child['id'] = catalogue_list[i]['uuid']
+                child['name'] = catalogue_list[i]['title']
+                child['section_id'] = catalogue_list[i]['doc_id']
+                # logger.info(father_id-1)
+                result[father_id - 1]['child'].append(child)
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class SectionModelViewSet(viewsets.ModelViewSet):
@@ -175,49 +163,49 @@ class ContextAPIView(APIView):
         kind = request.query_params.get('kind')
         result = dict()
         if kind == 'section':
-            child = Catalogue.objects.get(section=content_id)
-            child_min = Catalogue.objects.filter(father=child.father).aggregate(Min('order'))["order__min"]
-            child_max = Catalogue.objects.filter(father=child.father).aggregate(Max('order'))["order__max"]
-            father = Catalogue.objects.get(id=child.father)
-            father_min = Catalogue.objects.filter(note=child.note).filter(level=1).aggregate(Min('order'))["order__min"]
-            father_max = Catalogue.objects.filter(note=child.note).filter(level=1).aggregate(Max('order'))["order__max"]
-            if child.order == child_min:
-                if father.order == father_min:
-                    # 第一篇文章
-                    last_section = None
-                else:
-                    # 上一篇找上一章最后一篇
-                    last_father = Catalogue.objects.filter(note=child.note).filter(level=1).filter(
-                        order=father.order - 1)
-                    last_child_max = Catalogue.objects.filter(father=last_father[0].id).aggregate(Max('order'))[
-                        "order__max"]
-                    last_section = Catalogue.objects.filter(father=last_father[0].id).filter(order=last_child_max)[0]
-                next_section = Catalogue.objects.filter(father=father.id).filter(order=child.order + 1)[0]
-            elif child.order == child_max:
-                if father.order == father_max:
-                    # 最后一篇文章
-                    next_section = None
-                else:
-                    # 下一篇找上一章第一篇
-                    next_father = Catalogue.objects.filter(note=child.note).filter(level=1).filter(
-                        order=father.order + 1)
-                    next_child_min = Catalogue.objects.filter(father=next_father[0].id).aggregate(Min('order'))[
-                        "order__min"]
-                    next_section = Catalogue.objects.filter(father=next_father[0].id).filter(order=next_child_min)[0]
-                last_section = Catalogue.objects.filter(father=father.id).filter(order=child.order - 1)[0]
-            else:
-                last_section = Catalogue.objects.filter(father=father.id).filter(order=child.order - 1)[0]
-                next_section = Catalogue.objects.filter(father=father.id).filter(order=child.order + 1)[0]
-            if last_section:
-                result['last'] = {
-                    'id': last_section.section_id,
-                    'title': last_section.section.title
-                }
-            if next_section:
-                result['next'] = {
-                    'id': next_section.section_id,
-                    'title': next_section.section.title
-                }
+            # print(content_id)
+            note_id = Section.objects.get(id=content_id).note_id
+            catalogue_list = Catalogue.objects.get(note_id=note_id).catalogue
+            # print(catalogue_list)
+            # 查找指定文档的序号
+            section_order = 0
+            for i in range(len(catalogue_list)):
+                if catalogue_list[i]['doc_id'] == content_id:
+                    # logger.error("找到了，是第%s个" % i)
+                    section_order = i
+                    break
+            # print(section_order)
+            # 查找上一篇
+            last = dict()
+            last_item = catalogue_list[section_order - 1]
+            # 上一篇是目录
+            if last_item['doc_id'] is None:
+                # print("上一篇是目录")
+                last_item = catalogue_list[section_order - 2]
+            # print(last_item)
+            last['id'] = last_item['doc_id']
+            last['title'] = last_item['title']
+            # print(last)
+            result['last'] = last
+            # 第一篇文章
+            if section_order == 1:
+                # print("第一篇文章")
+                result['last'] = None
+            # 查找下一篇
+            next = dict()
+            try:
+                next_item = catalogue_list[section_order + 1]
+                # 下一篇是目录
+                if next_item['doc_id'] is None:
+                    next_item = catalogue_list[section_order + 2]
+                # print(next_item)
+                next['id'] = next_item['doc_id']
+                next['title'] = next_item['title']
+                # print(next)
+                result['next'] = next
+            except IndexError:
+                # 最后一篇文章
+                result['next'] = None
         else:
             article = Article.objects.get(id=content_id)
             last_article = Article.objects.filter(category=article.category).filter(
@@ -325,3 +313,83 @@ class CatalogueModelViewSet(viewsets.ModelViewSet):
     queryset = Catalogue.objects.all()
     serializer_class = CatalogueSerializer
 
+
+class SyncNoteListAPIView(APIView):
+    """
+    同步语雀笔记列表
+    """
+    permission_classes = (AdminAllOrGuestGetPost,)
+
+    @staticmethod
+    def post(request):
+        yuque = Yuque(settings.YUQUE_TOKEN)
+        try:
+            yuque.get_repo_list()
+            repo_list = yuque.repo_list
+            for item in repo_list:
+                content = {
+                    "id": item['id'],
+                }
+                Note.objects.update_or_create(defaults=item, **content)
+            return Response({'msg': '笔记列表同步成功'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(e)
+            return Response({'msg': '笔记列表同步失败'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class SyncNoteContentAPIView(APIView):
+    """
+    同步语雀笔记内容
+    """
+    permission_classes = (AdminAllOrGuestGetPost,)
+
+    @staticmethod
+    def post(request):
+        note_id = request.data.get('note_id')
+        namespace = Note.objects.get(id=note_id).namespace
+        # logger.info(note_id)
+        yuque = Yuque(settings.YUQUE_TOKEN)
+        try:
+            # 获取笔记目录
+            yuque.get_repo_catalogue(namespace)
+            catalogue_list = yuque.repo_catalogue
+            # 获取笔记内容
+            for i in catalogue_list:
+                if i['slug']:
+                    yuque.get_repo_content(namespace, i['slug'])
+            content_list = yuque.repo_content
+            logger.info('笔记内容获取完成')
+            # 遍历数据库对比接口，删除失效的文档
+            content_id_list = []
+            for j in content_list:
+                content_id_list.append(j['id'])
+            for k in Section.objects.filter(note_id=note_id):
+                if k.id not in content_id_list:
+                    Section.objects.get(id=k.id).delete()
+            logger.info('过期笔记清理完成')
+            # 笔记内容入库
+            for item in content_list:
+                # logger.error(item)
+                item['note_id'] = note_id
+                item['created_time'] = item['created_at']
+                item['modified_time'] = item['content_updated_at']
+                del item['created_at'], item['content_updated_at']
+                # logger.error(item)
+                content = {
+                    "id": item['id'],
+                }
+                Section.objects.update_or_create(defaults=item, **content)
+            logger.info('笔记入库完成')
+            # 笔记目录入库
+            catalogue = dict()
+            catalogue['catalogue'] = catalogue_list
+            catalogue['note_id'] = note_id
+            content = {
+                "note_id": catalogue['note_id'],
+            }
+            Catalogue.objects.update_or_create(defaults=catalogue, **content)
+            logger.info('目录入库完成')
+            return Response({'msg': '笔记内容同步成功'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(e)
+            return Response({'msg': '笔记内容同步失败'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

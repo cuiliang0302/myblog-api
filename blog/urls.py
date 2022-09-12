@@ -14,6 +14,10 @@ urlpatterns = [
     # 文章归档
     path('QRcode/', views.QRcodeAPIView.as_view()),
     # 文章二维码
+    path('syncNoteList/', views.SyncNoteListAPIView.as_view()),
+    # 同步笔记列表
+    path('syncNoteContent/', views.SyncNoteContentAPIView.as_view()),
+    # 同步笔记内容列表
 ]
 router = routers.DefaultRouter()
 router.register('article', views.ArticleModelViewSet, 'article')

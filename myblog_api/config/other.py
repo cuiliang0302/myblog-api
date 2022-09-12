@@ -30,6 +30,9 @@ BAIDU_PASSWORD = env.str('BAIDU_PASSWORD')
 BAIDU_ID = '16011900'
 BAIDU_TOKEN = env.str('BAIDU_TOKEN')
 
+# 语雀笔记token
+YUQUE_TOKEN = env.str('YUQUE_TOKEN')
+
 # 云服务器厂商
 ECS_MANUFACTURER = 'tencent'  # 可选aliyun tencent
 # CDN厂商

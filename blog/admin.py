@@ -34,23 +34,24 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ('id', 'name')
 
 
-# 学习笔记
+# 笔记列表
 @admin.register(Note)
 class NoteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-
-
-# 笔记目录
-@admin.register(Catalogue)
-class CatalogueAdmin(admin.ModelAdmin):
-    list_display = ('id', 'note', 'name', 'order', 'level', 'father', 'section')
-    list_display_links = ('id', 'name', 'father')
-    search_fields = ('name', 'father')
+    list_display = ('id', 'name', 'namespace', 'description', 'items_count')
+    search_fields = ('name', 'namespace')
 
 
 # 笔记内容
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'note', 'title', 'view', 'like', 'comment', 'collect', 'created_time', 'is_release')
+    list_display = (
+        'id', 'slug', 'note', 'title', 'view', 'like', 'comment', 'collect', 'created_time', 'modified_time')
     list_display_links = ('id', 'title', 'note')
-    search_fields = ('title', 'body')
+    search_fields = ('title', 'id')
+
+
+# 笔记目录
+@admin.register(Catalogue)
+class CatalogueAdmin(admin.ModelAdmin):
+    list_display = ('id', 'note')
+    list_display_links = ('id', 'note')

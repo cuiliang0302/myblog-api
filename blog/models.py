@@ -57,11 +57,15 @@ class Article(models.Model):
 
 
 class Note(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField('笔记名称', max_length=50)
     cover = models.URLField('笔记封面', default='https://oss.cuiliangblog.cn/images/cover.jpg')
+    namespace = models.CharField('笔记名称空间', max_length=50)
+    description = models.CharField('描述', max_length=100, blank=True, null=True)
+    items_count = models.IntegerField('文档数', default=0)
 
     class Meta:
-        verbose_name = '笔记名称'
+        verbose_name = '笔记列表 '
         verbose_name_plural = verbose_name
 
     def __str__(self):
@@ -69,6 +73,7 @@ class Note(models.Model):
 
 
 class Section(models.Model):
+    id = models.AutoField(primary_key=True)
     title = models.CharField('笔记标题', max_length=50)
     note = models.ForeignKey(Note, on_delete=models.CASCADE, verbose_name='所属笔记')
     body = MDTextField()
@@ -77,9 +82,9 @@ class Section(models.Model):
     like = models.PositiveIntegerField('点赞数', default=0)
     collect = models.PositiveIntegerField('收藏数', default=0)
     comment = models.PositiveIntegerField('评论数', default=0)
-    created_time = models.DateTimeField('发布时间', auto_now_add=True)
+    created_time = models.DateTimeField('创建时间', auto_now_add=True)
     modified_time = models.DateTimeField('修改时间', auto_now=True)
-    is_release = models.BooleanField('是否发布', default=True)
+    slug = models.CharField('标识ID', max_length=50)
 
     class Meta:
         verbose_name = '笔记内容'
@@ -94,16 +99,16 @@ class Section(models.Model):
 
 class Catalogue(models.Model):
     note = models.ForeignKey(Note, on_delete=models.DO_NOTHING, verbose_name='笔记名称')
-    name = models.CharField('标题名称', max_length=100)
-    order = models.IntegerField('序号', default=1)
-    level = models.IntegerField('等级', default=1)
-    father = models.IntegerField('父目录ID', blank=True, null=True)
-    section = models.ForeignKey(Section, on_delete=models.DO_NOTHING, verbose_name='笔记内容', blank=True, null=True)
+    catalogue = models.JSONField('目录')
+
+    # order = models.IntegerField('序号', default=1)
+    # level = models.IntegerField('等级', default=1)
+    # # father = models.IntegerField('父目录ID', blank=True, null=True)
+    # section = models.ForeignKey(Section, on_delete=models.DO_NOTHING, verbose_name='笔记内容', blank=True, null=True)
 
     class Meta:
         verbose_name = '笔记目录'
         verbose_name_plural = verbose_name
-        ordering = ("note", "level", "order")
 
     def __str__(self):
-        return self.name
+        return self.note.name

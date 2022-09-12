@@ -1,8 +1,11 @@
 import random
+import re
 from datetime import datetime, timedelta
 import uuid
 from statistics import mean
 from urllib.parse import urlencode
+
+import httpx as httpx
 from aliyunsdkcore.auth.credentials import AccessKeyCredential
 from loguru import logger
 import requests
@@ -954,3 +957,82 @@ class OAuth:
                     return self.__user_login()
         else:
             return False
+
+
+class Yuque:
+    """
+    语雀笔记API
+    """
+
+    def __init__(self, token):
+        self.headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1",
+            "X-Auth-Token": token
+        }
+        self.login = None
+        self.repo_list = []
+        self.repo_catalogue = []
+        self.repo_content = []
+
+    # 发送请求
+    def __request(self, api):
+        url = "https://www.yuque.com/api/v2" + api
+        r = httpx.get(url, headers=self.headers)
+        return r.json()
+
+    # 获取用户信息
+    def __get_userinfo(self):
+        api = "/user"
+        response = self.__request(api)
+        self.login = response['data']['login']
+
+    # 获取知识库列表
+    def get_repo_list(self):
+        # 获取用户login代码
+        self.__get_userinfo()
+        api = "/users/%s/repos" % self.login
+        response = self.__request(api)
+        for i in response['data']:
+            info = dict()
+            if i['public'] == 1:
+                # print(i)
+                info['id'] = i['id']
+                info['namespace'] = i['namespace']
+                info['name'] = i['name']
+                info['description'] = i['description']
+                info['items_count'] = i['items_count']
+                self.repo_list.append(info)
+
+    # 获取知识库目录
+    def get_repo_catalogue(self, namespace):
+        # 获取用户login代码
+        api = "/repos/%s/toc" % namespace
+        response = self.__request(api)
+        for i in response['data']:
+            info = dict()
+            # print(i)
+            info['type'] = i['type']
+            info['title'] = i['title']
+            info['uuid'] = i['uuid']
+            if i['type'] == 'DOC':
+                info['doc_id'] = i['doc_id']
+                info['slug'] = i['slug']
+            else:
+                info['doc_id'] = None
+                info['slug'] = None
+            self.repo_catalogue.append(info)
+
+    # 获取知识库文章内容
+    def get_repo_content(self, namespace, slug):
+        api = "/repos/%s/docs/%s" % (namespace, slug)
+        response = self.__request(api)
+        info = dict()
+        info['id'] = response['data']['id']
+        info['slug'] = response['data']['slug']
+        info['title'] = response['data']['title']
+        regex = re.compile(r'<a name="\w+"><\/a>')
+        info['body'] = regex.sub('', response['data']['body'])
+        info['created_at'] = response['data']['created_at']
+        info['content_updated_at'] = response['data']['content_updated_at']
+        self.repo_content.append(info)
