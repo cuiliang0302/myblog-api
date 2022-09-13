@@ -1,10 +1,12 @@
 import random
 from PIL import Image
 from django.contrib.sites.models import Site
+from django.utils import timezone
 from loguru import logger
 from rest_framework import viewsets, filters, status
 from django_filters.rest_framework import DjangoFilterBackend
 import qrcode
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
@@ -14,8 +16,7 @@ from public.utils import MyPageNumber
 from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
-from django.db.models import Max, Min
-from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet, AdminAllOrGuestGetPost
+from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet
 
 
 class ArticleModelViewSet(viewsets.ModelViewSet):
@@ -318,7 +319,7 @@ class SyncNoteListAPIView(APIView):
     """
     同步语雀笔记列表
     """
-    permission_classes = (AdminAllOrGuestGetPost,)
+    permission_classes = (IsAdminUser,)
 
     @staticmethod
     def post(request):
@@ -341,7 +342,7 @@ class SyncNoteContentAPIView(APIView):
     """
     同步语雀笔记内容
     """
-    permission_classes = (AdminAllOrGuestGetPost,)
+    permission_classes = (IsAdminUser,)
 
     @staticmethod
     def post(request):
@@ -389,6 +390,7 @@ class SyncNoteContentAPIView(APIView):
             }
             Catalogue.objects.update_or_create(defaults=catalogue, **content)
             logger.info('目录入库完成')
+            Note.objects.filter(id=note_id).update(updated_time=timezone.now())
             return Response({'msg': '笔记内容同步成功'}, status=status.HTTP_200_OK)
         except Exception as e:
             logger.error(e)

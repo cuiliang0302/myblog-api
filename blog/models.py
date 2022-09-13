@@ -63,6 +63,7 @@ class Note(models.Model):
     namespace = models.CharField('笔记名称空间', max_length=50)
     description = models.CharField('描述', max_length=100, blank=True, null=True)
     items_count = models.IntegerField('文档数', default=0)
+    updated_time = models.DateTimeField('更新时间', auto_now=True)
 
     class Meta:
         verbose_name = '笔记列表 '
@@ -100,11 +101,6 @@ class Section(models.Model):
 class Catalogue(models.Model):
     note = models.ForeignKey(Note, on_delete=models.DO_NOTHING, verbose_name='笔记名称')
     catalogue = models.JSONField('目录')
-
-    # order = models.IntegerField('序号', default=1)
-    # level = models.IntegerField('等级', default=1)
-    # # father = models.IntegerField('父目录ID', blank=True, null=True)
-    # section = models.ForeignKey(Section, on_delete=models.DO_NOTHING, verbose_name='笔记内容', blank=True, null=True)
 
     class Meta:
         verbose_name = '笔记目录'

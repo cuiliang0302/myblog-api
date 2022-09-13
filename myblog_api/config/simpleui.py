@@ -21,9 +21,9 @@ SIMPLEUI_CONFIG = {
             'icon': 'fas fa-wrench',
             'models': [
                 {
-                    'name': '目录编排',
+                    'name': '笔记同步',
                     'icon': 'fas fa-folder-open',
-                    'url': '/defined/#/directory/'
+                    'url': '/defined/#/note/'
                 },
                 {
                     'name': '图片裁剪',

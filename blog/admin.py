@@ -37,7 +37,7 @@ class TagAdmin(admin.ModelAdmin):
 # 笔记列表
 @admin.register(Note)
 class NoteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'namespace', 'description', 'items_count')
+    list_display = ('id', 'name', 'namespace', 'description', 'items_count', 'updated_time')
     search_fields = ('name', 'namespace')
 
 
