@@ -16,7 +16,7 @@ from public.utils import MyPageNumber
 from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
-from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet, AdminAllOrGuestGetPost
+from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet
 
 
 class ArticleModelViewSet(viewsets.ModelViewSet):
@@ -147,11 +147,6 @@ class SectionModelViewSet(viewsets.ModelViewSet):
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
-
-    # # 重新create方法，关联笔记目录
-    # def perform_create(self, serializer):
-    #     print(serializer.data)
-    #     # serializer.save()
 
 
 class ContextAPIView(APIView):
@@ -342,7 +337,7 @@ class SyncNoteContentAPIView(APIView):
     """
     同步语雀笔记内容
     """
-    permission_classes = (AdminAllOrGuestGetPost,)
+    permission_classes = (IsAdminUser,)
 
     @staticmethod
     def post(request):
