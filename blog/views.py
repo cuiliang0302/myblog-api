@@ -16,7 +16,7 @@ from public.utils import MyPageNumber
 from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
-from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet
+from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet, AdminAllOrGuestGetPost
 
 
 class ArticleModelViewSet(viewsets.ModelViewSet):
@@ -342,7 +342,7 @@ class SyncNoteContentAPIView(APIView):
     """
     同步语雀笔记内容
     """
-    permission_classes = (IsAdminUser,)
+    permission_classes = (AdminAllOrGuestGetPost,)
 
     @staticmethod
     def post(request):
