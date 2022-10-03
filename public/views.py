@@ -1,4 +1,7 @@
+import re
 from datetime import datetime, timedelta
+
+import markdown
 import requests
 from django.contrib.sites.models import Site
 from django.core.cache import cache
@@ -9,6 +12,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from qiniu import Auth
 from django.conf import settings
+
+from blog.models import Article, Section
+from management.models import SiteConfig
 from public.permissions import AdminAllOrGuestGetPost
 from public.tools import Tencent
 from loguru import logger
@@ -121,3 +127,28 @@ class ArticleLink(APIView):
     @staticmethod
     def get(request, article_id):
         return "https://" + Site.objects.get(id=1) + "/" + article_id
+
+
+class RobotsAPIView(APIView):
+    """
+    搜索引擎爬取内容接口
+    """
+
+    @staticmethod
+    def get(request, kind, content_id):
+        site = SiteConfig.objects.get(id=1)
+        if kind == 'article':
+            content = Article.objects.get(id=content_id)
+            # 提取keyword
+            keyword = content.category.name
+            for i in content.tags.all():
+                keyword = keyword + ',' + i.name
+        else:
+            content = Section.objects.get(id=content_id)
+            keyword = content.note.name
+        html_body = markdown.markdown(content.body)
+        # 去除a标签
+        body_a = re.sub(r"""<a\b[^>]+\bhref="([^"]*)"[^>]*>([\s\S]*?)</a>""", " ", html_body)
+        # 去除img标签
+        body = re.sub(r"""<img.*?src=[\"|\']?(.*?)[\"|\']?\s.*?>""", " ", body_a)
+        return render(request, 'robots.html', locals())
