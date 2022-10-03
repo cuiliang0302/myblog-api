@@ -10,7 +10,8 @@ WORKDIR /opt/myblog_api/
 #CMD ["python","manage.py","runserver","0.0.0.0:8000"]
 # 测试环境
 #EXPOSE 8000
-#CMD ["PROJECT_ENV=prod","python","manage.py","runserver","0.0.0.0:8000"]
+#ENV PROJECT_ENV prod
+#CMD ["python","manage.py","runserver","0.0.0.0:8000"]
 # 线上环境
 EXPOSE 8888
 ENV PROJECT_ENV prod
