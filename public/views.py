@@ -1,8 +1,7 @@
 import re
 from datetime import datetime, timedelta
-
 import markdown
-import requests
+import httpx
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.http import HttpResponse
@@ -12,7 +11,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from qiniu import Auth
 from django.conf import settings
-
 from blog.models import Article, Section
 from management.models import SiteConfig
 from public.permissions import AdminAllOrGuestGetPost
@@ -55,7 +53,7 @@ class ImgProxyAPIView(APIView):
     @staticmethod
     def get(request):
         url = request.query_params.get('url')
-        r = requests.get(url, verify=False)
+        r = httpx.get(url, verify=False)
         return HttpResponse(r.content, content_type='image/jpeg')
 
 
@@ -72,7 +70,7 @@ class BackgroundImageAPIView(APIView):
         else:
             # print("Redis过期了，重新取")
             base_url = 'https://cn.bing.com'
-            response = requests.get(base_url + '/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN')
+            response = httpx.get(base_url + '/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN')
             if response.status_code == 200:
                 response.close()
                 url = response.json()['images'][0]['url']

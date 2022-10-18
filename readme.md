@@ -1,7 +1,7 @@
 ## 项目简介
 
 ### 项目概述
-本项目使用Python3.10+Django3.2+Django REST Framework3.13组合开发的博客系统API后端，后端使用MySQL存储+Redis缓存，使用docker构建镜像实现自动发布，详细介绍可访问[崔亮的博客关于页](https://www.cuiliangblog.cn/about)
+本项目使用Python3.11+Django4.2+Django REST Framework3.14组合开发的博客系统API后端，后端使用MySQL存储+Redis缓存，使用docker构建镜像实现CICD，详细介绍可访问[崔亮的博客关于页](https://www.cuiliangblog.cn/about)
 
 ### 接口文档
 * markdown接口文档下载地址：[API接口markdown文档](https://api.cuiliangblog.cn/static/myblog.md)
@@ -53,7 +53,7 @@
 ```bash
 [root@aliyun opt]# mkdir -p /opt/docker/mysql
 [root@aliyun opt]# cd /opt/docker/mysql/
-[root@aliyun mysql]# docker run -p 3306:3306 --name mysql -v $PWD/conf:/etc/mysql/conf.d -v $PWD/logs:/logs -v $PWD/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=123.com -d --restart=always mysql
+[root@aliyun mysql]# docker run -p 3306:3306 --name mysql -v $PWD/conf:/etc/mysql/conf.d -v $PWD/logs:/logs -v $PWD/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=XXXXX -d --restart=always mysql
 
 # 创建数据库
 mysql> CREATE DATABASE myblog DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
@@ -70,7 +70,7 @@ mysql> show tables;
 ### redis部署
 
 ```bash
-[root@aliyun docker]# docker run --name redis -p 6379:6379 -d --restart=always redis --requirepass 123.com
+[root@aliyun docker]# docker run --name redis -p 6379:6379 -d --restart=always redis --requirepass XXXX
 fe24cb38242ed2f1c8c7340fa1ce05f39c8fc351a7a96506c43dff41ca0774bb
 [root@aliyun docker]# docker exec -it redis redis-cli
 127.0.0.1:6379> auth 123.com
@@ -86,42 +86,19 @@ docker run --name myblog_api -d -p 8888:8888 --restart always --link mysql --lin
 ### NGINX部署
 * ningx配置文件
 ```bash
-user root;
-worker_processes auto;
-error_log /var/log/nginx/error.log;
-pid /run/nginx.pid;
-# Load dynamic modules. See /usr/share/doc/nginx/README.dynamic.
-include /usr/share/nginx/modules/*.conf;
-events {
-    worker_connections 1024;
-}
-http {
-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-                      '$status $body_bytes_sent "$http_referer" '
-                      '"$http_user_agent" "$http_x_forwarded_for"';
-    access_log  /var/log/nginx/access.log  main;
-    sendfile            on;
-    tcp_nopush          on;
-    tcp_nodelay         on;
-    keepalive_timeout   65;
-    types_hash_max_size 2048;
-    include             /etc/nginx/mime.types;
-    default_type        application/octet-stream;
-    include /etc/nginx/conf.d/*.conf;
-    server {
-        listen       80;
-        server_name  ~^.*$;
-        location / {
-              include uwsgi_params;
-              uwsgi_pass drf:8888;
-              uwsgi_ignore_client_abort on;
-        }
+server {
+    listen       80;
+    server_name  ~^.*$;
+    location / {
+          include uwsgi_params;
+          uwsgi_pass drf:8888;
+          uwsgi_ignore_client_abort on;
     }
 }
 ```
 * nginx容器启动
 ```bash
-docker run --name nginx -d -p 80:80 -v $PWD/nginx.conf:/etc/nginx/nginx.conf --restart always --link myblog_api nginx
+docker run --name nginx -d -p 80:80 -v $PWD/nginx.conf:/etc/nginx/conf.d/api.conf --restart always --link myblog_api nginx
 ```
 ## 注意事项
 
