@@ -84,10 +84,10 @@ class SearchAPIView(APIView):
                 return Response({'msg': '查询记录为空，请更换关键字或切换为笔记搜索'}, status=status.HTTP_400_BAD_REQUEST)
         else:
             if order == 'view':
-                searchResult = Section.objects.filter(is_release=1).filter(
+                searchResult = Section.objects.filter(
                     Q(title__icontains=key) | Q(body__icontains=key)).order_by('-view')
             else:
-                searchResult = Section.objects.filter(is_release=1).filter(
+                searchResult = Section.objects.filter(
                     Q(title__icontains=key) | Q(body__icontains=key))
             if searchResult.exists():
                 # 笔记查到了

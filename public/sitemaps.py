@@ -4,7 +4,7 @@ from blog.models import Article, Section
 
 class ArticleSitemap(Sitemap):
     changefreq = "never"  # 可选,指定每个对象的更新频率
-    priority = 0.5  # 可选,指定每个对象的优先级,默认0.5
+    priority = 1.0  # 可选,指定每个对象的优先级,默认0.5
 
     def items(self):  # 返回对象的列表.这些对象将被其他方法或属性调用
         return Article.objects.all()
