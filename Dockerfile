@@ -1,7 +1,6 @@
 # 项目base镜像文件
 #FROM python:3.11
 #ADD ./envs /opt/DRF/envs
-
 FROM registry.cn-hangzhou.aliyuncs.com/cuiliang_img/myblog_env:latest
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone && pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
 ADD . /opt/DRF/
