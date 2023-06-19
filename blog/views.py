@@ -78,17 +78,11 @@ class GuessLikeAPIView(APIView):
     @staticmethod
     def get(request, article_id):
         article = Article.objects.get(id=article_id)
-        guess1 = Article.objects.filter(is_release=True).filter(tags=article.tags.all()[0]).exclude(id=article_id)
-        guess2 = Article.objects.filter(is_release=True).filter(tags=article.tags.all()[1]).exclude(id=article_id)
-        guess_all = []
-        for i in guess1:
-            guess_all.append(i.id)
-        for j in guess2:
-            guess_all.append(j.id)
-        guess = random.sample(set(guess_all), 4)
+        article_tag = article.tags.all()
+        guess = Article.objects.filter(is_release=True, tags__in=article_tag).order_by('?')[:4]
         result = []
-        for k in guess:
-            guess_article = Article.objects.get(id=k)
+        for i in guess:
+            guess_article = Article.objects.get(id=i.id)
             article_dict = dict()
             article_dict['id'] = guess_article.id
             article_dict['title'] = guess_article.title
