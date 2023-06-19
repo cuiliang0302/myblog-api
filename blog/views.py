@@ -3,7 +3,7 @@ from PIL import Image
 from django.contrib.sites.models import Site
 from django.utils import timezone
 from loguru import logger
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, status
 from django_filters.rest_framework import DjangoFilterBackend
 import qrcode
 from rest_framework.permissions import IsAdminUser
@@ -26,9 +26,9 @@ class ArticleModelViewSet(viewsets.ModelViewSet):
     permission_classes = (AdminAllOrGuestGetPat,)
     queryset = Article.objects.all()
     pagination_class = MyPageNumber
-    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend]
     ordering_fields = ['is_recommend', 'created_time', 'view', 'comment', 'like', 'collect']
-    filter_fields = ['category', 'tags']
+    filterset_fields = ('category', 'tags')
 
     # 重写get文章方法（阅读量+1）
     def retrieve(self, request, *args, **kwargs):
