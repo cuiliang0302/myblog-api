@@ -1,10 +1,11 @@
 import random
 import re
+import zoneinfo
 from datetime import datetime, timedelta
+import time
 import uuid
 from statistics import mean
 from urllib.parse import urlencode
-
 import httpx as httpx
 from aliyunsdkcore.auth.credentials import AccessKeyCredential
 from loguru import logger
@@ -36,6 +37,8 @@ from alipay.aop.api.AlipayClientConfig import AlipayClientConfig
 from alipay.aop.api.DefaultAlipayClient import DefaultAlipayClient
 import traceback
 from django.contrib.sites.models import Site
+
+tz = zoneinfo.ZoneInfo("Asia/Shanghai")
 
 
 class AuthCode:
@@ -310,6 +313,75 @@ class Baidu:
         }
         r = requests.post(self.url, data=json.dumps(data))
         result = json.loads(r.text)["body"]["data"][0]["result"]
+        return result
+
+
+class Umami:
+    """
+    umami统计api
+    """
+
+    def __init__(self):
+        self.base = settings.UMAMI_BASE
+        self.path = ''
+        self.method = ''
+        self.params = {}
+        self.token = ''
+        self.__get_token__()
+
+    # 请求接口数据
+    def __request_data__(self):
+        if self.method == "post":
+            response = httpx.post(self.base + self.path, data=self.params)
+            if response.status_code == 200:
+                return response.json()
+        else:
+            headers = {'Authorization': 'Bearer ' + self.token}
+            response = httpx.get(self.base + self.path, headers=headers, params=self.params)
+            # logger.info(response)
+            if response.status_code == 200:
+                return response.json()
+
+    # 获取token
+    def __get_token__(self):
+        self.path = '/api/auth/login'
+        self.method = 'post'
+        self.params = {
+            "username": settings.UMAMI_USERNAME,
+            "password": settings.UMAMI_PASSWORD
+        }
+        response = self.__request_data__()
+        token = response['token']
+        logger.info(token)
+        self.token = token
+
+    # 获取在线用户数
+    def get_active(self):
+        self.path = '/api/websites/' + settings.UMAMI_ID + '/active'
+        self.method = 'get'
+        self.params = {}
+        response = self.__request_data__()
+        # logger.info(response[0]['x'])
+        return response[0]['x']
+
+    # 获取访问量(最近24h)
+    def get_stats(self):
+        self.path = '/api/websites/' + settings.UMAMI_ID + '/stats'
+        self.method = 'get'
+        self.params = {
+            'startAt': int(round(time.time() * 1000)) - 86400000,
+            'endAt': int(round(time.time() * 1000))
+        }
+        # logger.info(self.params)
+        response = self.__request_data__()
+        # logger.info(response)
+        result = {
+            "pv": response['pageviews']['value'],
+            "uv": response['uniques']['value'],
+            "bounces": response['bounces']['value'],
+            "page_time": int(response['totaltime']['value'] / response['pageviews']['value']),
+        }
+        # logger.info(result)
         return result
 
 

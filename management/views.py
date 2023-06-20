@@ -11,7 +11,7 @@ from management.serializers import CarouselSerializer, AboutSerializer, LinkSeri
 from django.utils import timezone
 from datetime import datetime
 from django.conf import settings
-from public.tools import Baidu, Aliyun, Tencent
+from public.tools import Umami, Aliyun, Tencent
 from public.permissions import AdminAllOrGuestGetPost
 
 
@@ -71,11 +71,13 @@ class SiteStatisticsAPIView(APIView):
         d2 = datetime.strptime(now_data, '%Y-%m-%d')
         data_count['uptime'] = (d2 - d1).days
         # 流量统计
-        api = Baidu()
-        count = api.count_all()
+        api = Umami()
+        data_count['active'] = api.get_active()
+        count = api.get_stats()
         data_count['pv'] = count['pv']
         data_count['uv'] = count['uv']
-        data_count['ip'] = count['ip']
+        data_count['bounces'] = count['bounces']
+        data_count['page_time'] = count['page_time']
         # 文章总数
         data_count['article'] = Article.objects.filter(is_release=True).count()
         # 笔记总数
@@ -97,23 +99,23 @@ class SiteCountAPIView(APIView):
 
     @cache_response()
     def get(self, request):
-        api = Baidu()
-        count = api.count_today()
-        today = count[0]
-        compare = count[2]
-        result = {
-            'today_pv': today[1],
-            'today_uv': today[2],
-            'today_time': today[3],
-            'today_page': today[4],
-            'today_new_user': today[5],
-            'compare_pv': compare[1],
-            'compare_uv': compare[2],
-            'compare_time': compare[3],
-            'compare_page': compare[4],
-            'compare_new_user': compare[5],
-        }
-        return Response(result, status=status.HTTP_200_OK)
+        # api = Baidu()
+        # count = api.count_today()
+        # today = count[0]
+        # compare = count[2]
+        # result = {
+        #     'today_pv': today[1],
+        #     'today_uv': today[2],
+        #     'today_time': today[3],
+        #     'today_page': today[4],
+        #     'today_new_user': today[5],
+        #     'compare_pv': compare[1],
+        #     'compare_uv': compare[2],
+        #     'compare_time': compare[3],
+        #     'compare_page': compare[4],
+        #     'compare_new_user': compare[5],
+        # }
+        return Response({}, status=status.HTTP_200_OK)
 
 
 class ServerMonitoringAPIView(APIView):
@@ -160,52 +162,53 @@ class SiteEchartsAPIView(APIView):
     """
     echarts获取网站数据接口
     """
+
     # permission_classes = (IsAdminUser,)
 
     @staticmethod
     def get(request):
         chart = request.query_params.get('chart')
-        api = Baidu()
+        # api = Baidu()
         result = []
-        if chart == "trend":
-            trend = api.count_trend()
-            for i in trend["items"][0]:
-                item = dict()
-                item['date'] = i[0].replace('/', '-')
-                result.append(item)
-            for j in range(len(trend["items"][1])):
-                result[j]['pv'] = trend["items"][1][j][0]
-                result[j]['uv'] = trend["items"][1][j][1]
-                result[j]['new_user'] = trend["items"][1][j][2]
-                result[j]['ip'] = trend["items"][1][j][3]
-                result[j]['time'] = trend["items"][1][j][4]
-                result[j]['page'] = trend["items"][1][j][5]
-            return Response(result, status=status.HTTP_200_OK)
-        if chart == 'equipment':
-            device = api.count_device()
-            result = [{'name': 'PC端', 'value': device['pc']}, {'name': '移动端', 'value': device['mobile']}]
-            return Response(result, status=status.HTTP_200_OK)
-        if chart == 'page':
-            result = []
-            page = api.count_page()
-            for i in range(len(page["items"][0])):
-                if '屏蔽' in page["items"][0][i][0]['name'] or 'local' in page["items"][0][i][0]['name'] \
-                        or '#' not in page["items"][0][i][0]['name']:
-                    continue
-                item = dict()
-                item['url'] = page["items"][0][i][0]['name']
-                item['pv'] = page["items"][1][i][0]
-                item['uv'] = page["items"][1][i][1]
-                item['in_count'] = page["items"][1][i][2]
-                item['time'] = page["items"][1][i][3]
-                result.append(item)
-            return Response(result, status=status.HTTP_200_OK)
-        if chart == 'area':
-            area = api.count_map()
-            result = []
-            for i in range(len(area['items'][0])):
-                pv_count = dict()
-                pv_count['name'] = area['items'][0][i][0]['name']
-                pv_count['value'] = area['items'][1][i][0]
-                result.append(pv_count)
-            return Response(result, status=status.HTTP_200_OK)
+        # if chart == "trend":
+        #     trend = api.count_trend()
+        #     for i in trend["items"][0]:
+        #         item = dict()
+        #         item['date'] = i[0].replace('/', '-')
+        #         result.append(item)
+        #     for j in range(len(trend["items"][1])):
+        #         result[j]['pv'] = trend["items"][1][j][0]
+        #         result[j]['uv'] = trend["items"][1][j][1]
+        #         result[j]['new_user'] = trend["items"][1][j][2]
+        #         result[j]['ip'] = trend["items"][1][j][3]
+        #         result[j]['time'] = trend["items"][1][j][4]
+        #         result[j]['page'] = trend["items"][1][j][5]
+        #     return Response(result, status=status.HTTP_200_OK)
+        # if chart == 'equipment':
+        #     device = api.count_device()
+        #     result = [{'name': 'PC端', 'value': device['pc']}, {'name': '移动端', 'value': device['mobile']}]
+        #     return Response(result, status=status.HTTP_200_OK)
+        # if chart == 'page':
+        #     result = []
+        #     page = api.count_page()
+        #     for i in range(len(page["items"][0])):
+        #         if '屏蔽' in page["items"][0][i][0]['name'] or 'local' in page["items"][0][i][0]['name'] \
+        #                 or '#' not in page["items"][0][i][0]['name']:
+        #             continue
+        #         item = dict()
+        #         item['url'] = page["items"][0][i][0]['name']
+        #         item['pv'] = page["items"][1][i][0]
+        #         item['uv'] = page["items"][1][i][1]
+        #         item['in_count'] = page["items"][1][i][2]
+        #         item['time'] = page["items"][1][i][3]
+        #         result.append(item)
+        #     return Response(result, status=status.HTTP_200_OK)
+        # if chart == 'area':
+        #     area = api.count_map()
+        #     result = []
+        #     for i in range(len(area['items'][0])):
+        #         pv_count = dict()
+        #         pv_count['name'] = area['items'][0][i][0]['name']
+        #         pv_count['value'] = area['items'][1][i][0]
+        #         result.append(pv_count)
+        return Response({}, status=status.HTTP_200_OK)
