@@ -6,6 +6,7 @@ from loguru import logger
 from rest_framework import viewsets, status
 from django_filters.rest_framework import DjangoFilterBackend
 import qrcode
+from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -26,7 +27,7 @@ class ArticleModelViewSet(viewsets.ModelViewSet):
     permission_classes = (AdminAllOrGuestGetPat,)
     queryset = Article.objects.all()
     pagination_class = MyPageNumber
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ['is_recommend', 'created_time', 'view', 'comment', 'like', 'collect']
     filterset_fields = ('category', 'tags')
 
