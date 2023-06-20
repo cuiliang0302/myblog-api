@@ -1,3 +1,4 @@
+from loguru import logger
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
@@ -61,7 +62,7 @@ class SiteStatisticsAPIView(APIView):
     网站数据统计
     """
 
-    @cache_response()
+    @cache_response(timeout=300)
     def get(self, request):
         # 数据统计
         data_count = dict()
@@ -72,7 +73,8 @@ class SiteStatisticsAPIView(APIView):
         data_count['uptime'] = (d2 - d1).days
         # 流量统计
         api = Umami()
-        data_count['active'] = api.get_active()
+        # logger.info(api.get_active())
+        data_count['active'] = api.get_active()+1
         count = api.get_stats()
         data_count['pv'] = count['pv']
         data_count['uv'] = count['uv']
