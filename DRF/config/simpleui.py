@@ -14,7 +14,7 @@ SIMPLEUI_HOME_ICON = 'fa fa-home'
 # 自定义菜单
 SIMPLEUI_CONFIG = {
     'system_keep': True,
-    'menu_display': ['内容管理', '用户管理', '网站管理', '行为记录', '其他工具', '计划任务'],
+    'menu_display': ['内容管理', '用户管理', '网站管理', '行为记录', '其他工具', '计划任务', '公共管理'],
     'menus': [
         {
             'name': '其他工具',

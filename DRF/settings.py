@@ -121,11 +121,12 @@ SIMPLE_JWT = {
 }
 
 # 允许指定访问来源
-# CORS_ORIGIN_WHITELIST = (
-#     'http://127.0.0.1:8080',
-#     'http://localhost:8080',
-#     'http://ops_vue:8080',
-# )
+CSRF_TRUSTED_ORIGINS = (
+    'http://127.0.0.1:8080',
+    'https://api.cuiliangblog.cn',
+    'https://www.cuiliangblog.cn',
+    'https://m.cuiliangblog.cn',
+)
 # 允许携带cookie
 CORS_ALLOW_CREDENTIALS = True
 # 允许所有

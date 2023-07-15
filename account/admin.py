@@ -1,10 +1,11 @@
 from django.contrib import admin
 from .models import UserInfo, UserSource, OAuthId
+from django.contrib.auth.admin import UserAdmin
 
 
 # 用户详细信息
 @admin.register(UserInfo)
-class UserInfoAdmin(admin.ModelAdmin):
+class UserInfoAdmin(UserAdmin):
     list_display = ('id', 'username', 'phone', 'email', 'sex', 'last_login', 'date_joined', 'source')
     # 文章列表里显示想要显示的字段
     list_display_links = ('username', 'phone', 'email')

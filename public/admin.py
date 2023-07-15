@@ -1,5 +1,13 @@
+from public.models import DemoKind, DemoUser
 from django.contrib import admin
-from django.contrib.sites.models import Site
 
-admin.site.site_header = Site.objects.get_current().name + '后台管理'  # 设置header
-admin.site.site_title = '后台管理'  # 设置title
+
+@admin.register(DemoKind)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name')
+
+
+@admin.register(DemoUser)
+class NoteAdmin(admin.ModelAdmin):
+    list_display = ('id', 'username', 'kind', 'sex', 'birthday', 'height', 'weight', 'created_time')
+    search_fields = ('username',)

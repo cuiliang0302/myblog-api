@@ -16,4 +16,6 @@ urlpatterns = [
     # 获取省市区编号
 ]
 router = routers.DefaultRouter()
+# 示例数据接口
+router.register('demoUser', views.DemoUserModelViewSet, 'demoUser')
 urlpatterns += router.urls

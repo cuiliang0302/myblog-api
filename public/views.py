@@ -6,17 +6,20 @@ from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from qiniu import Auth
 from django.conf import settings
 from blog.models import Article, Section
 from management.models import SiteConfig
+from public.models import DemoUser
 from public.permissions import AdminAllOrGuestGetPost
+from public.serializers import DemoUserSerializer
 from public.tools import Tencent
 from loguru import logger
 from public.areaData import areaList
+from public.utils import MyPageNumber
 
 
 def defined(request):
@@ -150,3 +153,13 @@ class RobotsAPIView(APIView):
         # 去除img标签
         body = re.sub(r"""<img.*?src=[\"|\']?(.*?)[\"|\']?\s.*?>""", " ", body_a)
         return render(request, 'robots.html', locals())
+
+
+class DemoUserModelViewSet(viewsets.ModelViewSet):
+    """
+    示例数据增删改查
+    """
+    queryset = DemoUser.objects.all()
+    serializer_class = DemoUserSerializer
+    pagination_class = MyPageNumber
+    filterset_fields = ('username', 'kind')
