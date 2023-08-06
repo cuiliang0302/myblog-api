@@ -4,5 +4,9 @@ logs
 QRcode.png
 envs
 file
-*/migrations/0*.py
 .gitignore
+/account/migrations/
+/blog/migrations/
+/management/migrations/
+/public/management/
+/record/management/
