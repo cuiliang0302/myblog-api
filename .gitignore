@@ -3,3 +3,6 @@ venv
 logs
 QRcode.png
 envs
+file
+*/migrations/0*.py
+.gitignore

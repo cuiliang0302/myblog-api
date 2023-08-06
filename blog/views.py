@@ -332,13 +332,14 @@ class SyncNoteContentAPIView(APIView):
     """
     同步语雀笔记内容
     """
+
     permission_classes = (IsAdminUser,)
 
     @staticmethod
     def post(request):
         note_id = request.data.get('note_id')
         namespace = Note.objects.get(id=note_id).namespace
-        # logger.info(note_id)
+        logger.info("开始获取笔记内容")
         yuque = Yuque(settings.YUQUE_TOKEN)
         try:
             # 获取笔记目录
@@ -380,7 +381,11 @@ class SyncNoteContentAPIView(APIView):
             }
             Catalogue.objects.update_or_create(defaults=catalogue, **content)
             logger.info('目录入库完成')
-            Note.objects.filter(id=note_id).update(updated_time=timezone.now())
+            # 更新笔记信息
+            note = Note.objects.get(id=note_id)
+            note.updated_time = timezone.now()
+            note.items_count = Section.objects.filter(note=note_id).count()
+            note.save()
             return Response({'msg': '笔记内容同步成功'}, status=status.HTTP_200_OK)
         except Exception as e:
             logger.error(e)
