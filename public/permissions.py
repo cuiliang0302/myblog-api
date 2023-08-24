@@ -49,22 +49,6 @@ class AdminAllOrGuestGetPut(BasePermission):
             return False
 
 
-class AdminAllOrGuestGetPat(BasePermission):
-    """
-    自定义权限管理(管理员全部权限，其他用户只能get读取和patch部分修改)
-    """
-
-    def has_permission(self, request, view):
-        # 匿名用户只允许get和post
-        if request.method == 'GET' or request.method == 'PATCH':
-            return True
-        # 管理员允许所有
-        elif request.user.username == 'admin':
-            return True
-        else:
-            return False
-
-
 class AdminAllOrGuestGetPutPost(BasePermission):
     """
     自定义权限管理(管理员全部权限，其他用户只能get读取、patch部分修改、post添加)

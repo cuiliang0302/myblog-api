@@ -7,7 +7,7 @@ from rest_framework import viewsets, status
 from django_filters.rest_framework import DjangoFilterBackend
 import qrcode
 from rest_framework.filters import OrderingFilter
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
@@ -17,14 +17,14 @@ from public.utils import MyPageNumber
 from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
-from public.permissions import AdminAllOrGuestGetPat, AdminAllOrGuestGet
+from public.permissions import AdminAllOrGuestGet
 
 
 class ArticleModelViewSet(viewsets.ModelViewSet):
     """
     博客文章增删改查
     """
-    permission_classes = (AdminAllOrGuestGetPat,)
+    permission_classes = (AdminAllOrGuestGet,)
     queryset = Article.objects.all()
     pagination_class = MyPageNumber
     filter_backends = [DjangoFilterBackend, OrderingFilter]
@@ -92,6 +92,29 @@ class GuessLikeAPIView(APIView):
         return Response(result, status=status.HTTP_200_OK)
 
 
+class LikeAPIView(APIView):
+    """
+    文章或笔记点赞
+    """
+    permission_classes = (AllowAny,)
+
+    @staticmethod
+    def post(request):
+        like_id = request.data['id']
+        kind = request.data['kind']
+        if kind == 'article':
+            # 文章点赞
+            article = Article.objects.get(id=like_id)
+            article.like = article.like + 1
+            article.save()
+            return Response({"msg": "文章点赞成功"}, status=status.HTTP_200_OK)
+        else:
+            section = Section.objects.get(id=like_id)
+            section.like = section.like + 1
+            section.save()
+            return Response({"msg": "笔记点赞成功"}, status=status.HTTP_200_OK)
+
+
 class CatalogueAPIView(APIView):
     """
     博客笔记目录
@@ -131,7 +154,7 @@ class SectionModelViewSet(viewsets.ModelViewSet):
     """
     笔记内容增删改查
     """
-    permission_classes = (AdminAllOrGuestGetPat,)
+    permission_classes = (AdminAllOrGuestGet,)
     queryset = Section.objects.all()
     serializer_class = SectionSerializer
 
