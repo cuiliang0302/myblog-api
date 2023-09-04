@@ -63,7 +63,7 @@ class TagModelViewSet(CacheResponseMixin, viewsets.ModelViewSet):
     serializer_class = TagSerializer
 
 
-class NoteModelViewSet(CacheResponseMixin, viewsets.ModelViewSet):
+class NoteModelViewSet(viewsets.ModelViewSet):
     """
     笔记名称增删改查
     """
@@ -362,7 +362,7 @@ class SyncNoteContentAPIView(APIView):
     def post(request):
         note_id = request.data.get('note_id')
         namespace = Note.objects.get(id=note_id).namespace
-        logger.info("开始获取笔记内容")
+        logger.info("开始获取%s笔记内容" % namespace)
         yuque = Yuque(settings.YUQUE_TOKEN)
         try:
             # 获取笔记目录
