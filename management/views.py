@@ -1,4 +1,3 @@
-from loguru import logger
 from rest_framework import viewsets, status
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response

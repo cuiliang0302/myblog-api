@@ -1,4 +1,3 @@
-import random
 from PIL import Image
 from django.contrib.sites.models import Site
 from django.utils import timezone
