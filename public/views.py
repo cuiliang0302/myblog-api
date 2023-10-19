@@ -6,19 +6,23 @@ from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.http import HttpResponse
 from django.shortcuts import render
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from qiniu import Auth
 from django.conf import settings
 from blog.models import Article, Section
 from management.models import SiteConfig
-from public.models import DemoUser
+from public.filter import DemoUserFilter
+from public.models import DemoUser, DemoProvince
 from public.permissions import AdminAllOrGuestGetPost
-from public.serializers import DemoUserSerializer
+from public.serializers import DemoUserSerializer, DemoProvinceSerializer
 from public.tools import Tencent
 from loguru import logger
 from public.areaData import areaList
+from rest_framework.filters import OrderingFilter
 from public.utils import MyPageNumber
 
 
@@ -155,11 +159,26 @@ class RobotsAPIView(APIView):
         return render(request, 'robots.html', locals())
 
 
+class DemoProvinceModelViewSet(viewsets.ModelViewSet):
+    """
+    示例省份数据增删改查
+    """
+    permission_classes = (AllowAny,)
+    queryset = DemoProvince.objects.all()
+    serializer_class = DemoProvinceSerializer
+    pagination_class = MyPageNumber
+
+
 class DemoUserModelViewSet(viewsets.ModelViewSet):
     """
-    示例数据增删改查
+    示例用户数据增删改查
     """
+    permission_classes = (AllowAny,)
     queryset = DemoUser.objects.all()
     serializer_class = DemoUserSerializer
     pagination_class = MyPageNumber
-    filterset_fields = ('username', 'kind')
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    # 指定自定义的过滤器
+    filterset_class = DemoUserFilter
+    # filterset_fields = ('username', 'province_id')
+    ordering_fields = ['username', 'birthday']
