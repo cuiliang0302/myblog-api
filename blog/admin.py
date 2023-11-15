@@ -39,6 +39,7 @@ class TagAdmin(admin.ModelAdmin):
 class NoteAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'namespace', 'description', 'items_count', 'updated_time')
     search_fields = ('name', 'namespace')
+    ordering = ('-updated_time',)
 
 
 # 笔记内容

@@ -11,6 +11,8 @@ class UserInfoAdmin(UserAdmin):
     list_display_links = ('username', 'phone', 'email')
     # 设置哪些字段可以点击进入编辑界面
     search_fields = ('username',)
+    # 默认排序字段
+    ordering = ('-last_login',)
 
 
 # 用户来源

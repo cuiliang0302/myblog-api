@@ -46,7 +46,6 @@ class UserInfo(AbstractUser):
     class Meta:
         verbose_name = '用户详细信息'
         verbose_name_plural = verbose_name
-        ordering = ("-last_login",)
 
     def __str__(self):
         return self.username
