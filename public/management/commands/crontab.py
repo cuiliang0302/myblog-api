@@ -49,16 +49,12 @@ def check_ssl_job():
     exitcode, output = subprocess.getstatusoutput(cmd)
     # 证书开始日期
     start_match = re.search('start date: (.*)', output)
-    # print(start_match)
     start_date = datetime.strptime(start_match.group(1), "%b %d %H:%M:%S %Y GMT")
-    # print("证书开始日期：", start_date)
     # 证书结束日期
     end_match = re.search('expire date: (.*)', output)
     end_date = datetime.strptime(end_match.group(1), "%b %d %H:%M:%S %Y GMT")
-    # print("证书结束日期：", end_date)
     # 剩余天数
     remain_day = (end_date - datetime.now()).days
-    # print("剩余天数：", remain_day)
     if remain_day <= 3:
         admin_email = UserInfo.objects.get(id=1).email
         content = """
