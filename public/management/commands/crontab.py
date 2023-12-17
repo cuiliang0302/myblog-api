@@ -37,55 +37,55 @@ def sitemap_job():
     logger.info('定时生成sitemap任务执行完毕')
 
 
-# def check_ssl_job():
-#     """
-#     网站ssl证书检查
-#     :return:
-#     """
-#     logger.info('检查ssl证书任务开始执行')
-#     domain = Site.objects.get_current().domain
-#     # print(domain)
-#     cmd = f"curl -Ivs https://{domain} --connect-timeout 10"
-#     exitcode, output = subprocess.getstatusoutput(cmd)
-#     # 证书开始日期
-#     start_match = re.search('start date: (.*)', output)
-#     # print(start_match)
-#     start_date = datetime.strptime(start_match.group(1), "%b %d %H:%M:%S %Y GMT")
-#     # print("证书开始日期：", start_date)
-#     # 证书结束日期
-#     end_match = re.search('expire date: (.*)', output)
-#     end_date = datetime.strptime(end_match.group(1), "%b %d %H:%M:%S %Y GMT")
-#     # print("证书结束日期：", end_date)
-#     # 剩余天数
-#     remain_day = (end_date - datetime.now()).days
-#     # print("剩余天数：", remain_day)
-#     if remain_day <= 3:
-#         admin_email = UserInfo.objects.get(id=1).email
-#         content = """
-#         <body>
-#             <h3>证书有效期提示</h3>
-#             <table border="1">
-#               <tr>
-#                 <th>剩余天数：</th>
-#                 <th>{0}天</th>
-#               </tr>
-#               <tr>
-#                 <td>证书开始日期：</td>
-#                 <td>{1}</td>
-#               </tr>
-#               <tr>
-#                 <td>证书结束日期：</td>
-#                 <td>{2}</td>
-#               </tr>
-#             </table>
-#         </body>
-#         """.format(remain_day, start_date, end_date)
-#         subject = "[" + Site.objects.get_current().name + "] 管理员通知"
-#         from_email = Site.objects.get_current().name + "<cuiliangblog@qq.com>"
-#         msg = EmailMultiAlternatives(subject, content, from_email, [admin_email])
-#         msg.content_subtype = "html"
-#         msg.send()
-#     logger.info('ssl证书检查完成，还剩{0}天，执行时间：{1}'.format(remain_day, datetime.now()))
+def check_ssl_job():
+    """
+    网站ssl证书检查
+    :return:
+    """
+    logger.info('检查ssl证书任务开始执行')
+    domain = Site.objects.get_current().domain
+    # print(domain)
+    cmd = f"curl -Ivs https://{domain} --connect-timeout 10"
+    exitcode, output = subprocess.getstatusoutput(cmd)
+    # 证书开始日期
+    start_match = re.search('start date: (.*)', output)
+    # print(start_match)
+    start_date = datetime.strptime(start_match.group(1), "%b %d %H:%M:%S %Y GMT")
+    # print("证书开始日期：", start_date)
+    # 证书结束日期
+    end_match = re.search('expire date: (.*)', output)
+    end_date = datetime.strptime(end_match.group(1), "%b %d %H:%M:%S %Y GMT")
+    # print("证书结束日期：", end_date)
+    # 剩余天数
+    remain_day = (end_date - datetime.now()).days
+    # print("剩余天数：", remain_day)
+    if remain_day <= 3:
+        admin_email = UserInfo.objects.get(id=1).email
+        content = """
+        <body>
+            <h3>证书有效期提示</h3>
+            <table border="1">
+              <tr>
+                <th>剩余天数：</th>
+                <th>{0}天</th>
+              </tr>
+              <tr>
+                <td>证书开始日期：</td>
+                <td>{1}</td>
+              </tr>
+              <tr>
+                <td>证书结束日期：</td>
+                <td>{2}</td>
+              </tr>
+            </table>
+        </body>
+        """.format(remain_day, start_date, end_date)
+        subject = "[" + Site.objects.get_current().name + "] 管理员通知"
+        from_email = Site.objects.get_current().name + "<cuiliangblog@qq.com>"
+        msg = EmailMultiAlternatives(subject, content, from_email, [admin_email])
+        msg.content_subtype = "html"
+        msg.send()
+    logger.info('ssl证书检查完成，还剩{0}天，执行时间：{1}'.format(remain_day, datetime.now()))
 
 
 @util.close_old_connections
@@ -110,16 +110,16 @@ class Command(BaseCommand):
         )
         logger.info("添加sitemap_job任务成功")
 
-        # scheduler.add_job(
-        #     check_ssl_job,
-        #     trigger=CronTrigger(hour="01", minute="00"),  # Every 10 seconds
-        #     # trigger=CronTrigger(second='*/10'),  # Every 10 seconds
-        #     id="check_ssl_job",  # The `id` assigned to each job MUST be unique
-        #     max_instances=5,
-        #     replace_existing=True,
-        #     misfire_grace_time=60
-        # )
-        # logger.info("添加check_ssl_job任务成功")
+        scheduler.add_job(
+            check_ssl_job,
+            trigger=CronTrigger(hour="10", minute="00"),  # Every 10 seconds
+            # trigger=CronTrigger(second='*/10'),  # Every 10 seconds
+            id="check_ssl_job",  # The `id` assigned to each job MUST be unique
+            max_instances=5,
+            replace_existing=True,
+            misfire_grace_time=60
+        )
+        logger.info("添加check_ssl_job任务成功")
 
         scheduler.add_job(
             delete_old_job_executions,
