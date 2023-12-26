@@ -19,8 +19,8 @@ class DemoUser(models.Model):
     province = models.ForeignKey(DemoProvince, verbose_name='省份', on_delete=models.CASCADE)
     sex = models.CharField('性别', max_length=1, choices=Sex.choices, default=Sex.men)
     birthday = models.DateField('生日', blank=True, null=True)
-    height = models.IntegerField('身高', default=175)
-    weight = models.IntegerField('体重', default=60)
+    height = models.IntegerField('身高(m)', default=175)
+    weight = models.DecimalField('体重(kg)', max_digits=5, decimal_places=2)
     photo = models.URLField('头像', blank=True, null=True)
     created_time = models.DateTimeField('注册时间', auto_now_add=True)
 
