@@ -15,14 +15,15 @@ class DemoProvince(models.Model):
 
 
 class DemoUser(models.Model):
-    username = models.CharField('用户名', max_length=30)
+    username = models.CharField('用户名', max_length=32)
     province = models.ForeignKey(DemoProvince, verbose_name='省份', on_delete=models.CASCADE)
     sex = models.CharField('性别', max_length=1, choices=Sex.choices, default=Sex.men)
     birthday = models.DateField('生日', blank=True, null=True)
-    height = models.IntegerField('身高(m)', default=175)
+    height = models.IntegerField('身高(cm)', default=175)
     weight = models.DecimalField('体重(kg)', max_digits=5, decimal_places=2)
     photo = models.URLField('头像', blank=True, null=True)
     created_time = models.DateTimeField('注册时间', auto_now_add=True)
+    introduction = models.TextField('个人介绍', blank=True, null=True)
 
     class Meta:
         verbose_name = '示例用户'

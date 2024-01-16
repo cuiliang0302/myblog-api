@@ -9,5 +9,5 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(DemoUser)
 class NoteAdmin(admin.ModelAdmin):
-    list_display = ('id', 'username', 'sex', 'birthday', 'height', 'weight', 'created_time')
+    list_display = ('id', 'username', 'sex', 'birthday', 'height', 'weight', 'created_time', 'introduction')
     search_fields = ('username',)

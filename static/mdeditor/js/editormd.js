@@ -3365,7 +3365,7 @@
 
     // Emoji graphics files url path
     editormd.emoji     = {
-        path  : "https://www.webpagefx.com/tools/emoji-cheat-sheet/graphics/emojis/",
+        path  : "https://www.webfx.com/assets/emoji-cheat-sheet/img/graphics/emojis/",
         ext   : ".png"
     };
 
@@ -4179,8 +4179,8 @@
     // 使用国外的CDN，加载速度有时会很慢，或者自定义URL
     // You can custom KaTeX load url.
     editormd.katexURL  = {
-        css : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min",
-        js  : "//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min"
+        css : "//cdn.bootcdn.net/ajax/libs/KaTeX/0.3.0/katex.min",
+        js  : "//cdn.bootcdn.net/ajax/libs/KaTeX/0.3.0/katex.min"
     };
     
     editormd.kaTeXLoaded = false;
