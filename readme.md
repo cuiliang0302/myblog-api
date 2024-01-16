@@ -5,7 +5,7 @@
 # 接口文档
 * markdown接口文档下载地址：[API接口markdown文档](https://api.cuiliangblog.cn/static/myblog.md)
 * swagger接口文档查看地址： [swagger接口文档](https://api.cuiliangblog.cn/)
-* Apifox在线接口文档查看地址：[Apifox在线接口文档](https://www.apifox.cn/apidoc/shared-1cf3e9c2-ea9a-4463-983f-7b97197dc725) 访问密码 : b7sWI26j 
+* Apifox在线接口文档查看地址（推荐）：[Apifox在线接口文档](https://www.apifox.cn/apidoc/shared-1cf3e9c2-ea9a-4463-983f-7b97197dc725) 访问密码 : b7sWI26j 
 
 # 功能模块
 ## 内容管理
@@ -246,4 +246,49 @@ python manage.py changepassword admin
 ```bash
 docker exec -it myblog_api bash
 python manage.py collectstatic
+```
+
+## 数据库定时备份
+* 创建备份目录
+```bash
+mkdir -p /opt/backup/myblog 
+```
+* 创建备份脚本
+```bash
+vim myblog-db-back.sh
+#!/bin/bash
+
+# 设置数据库连接信息
+db_user="root"
+db_password="123.com"
+db_name="myblog"
+
+# 设置备份文件的目录
+backup_dir="/opt/backup/myblog"
+
+# 设置备份文件的名称，格式为：backup-年月日-时分秒.sql
+backup_file="myblog-$(date +"%Y%m%d-%H%M%S").sql"
+
+# 使用 mysqldump 命令执行数据库备份
+docker exec mysql mysqldump -u $db_user -p$db_password $db_name > $backup_dir/$backup_file
+
+# 打印备份完成信息
+echo "备份完成: $backup_file"
+
+# 删除7天前的备份文件
+find $backup_dir -type f -name "backup-*" -mtime +6 -exec rm {} \;
+
+# 打印清理完成信息
+echo "7天前备份文件清理完成"
+```
+
+* 授予运行权限
+```bash
+chmod u+x myblog-db-back.sh 
+```
+
+* 添加定时任务
+```bash
+crontab -e
+0 1 * * * sh /opt/backup/myblog-db-back.sh 
 ```
