@@ -361,8 +361,8 @@ class Umami:
         self.method = 'get'
         self.params = {}
         response = self.__request_data__()
-        # logger.info(response[0]['x'])
-        return response[0]['x']
+        # logger.info(response)
+        return response['x']
 
     # 获取访问量(最近24h)
     def get_stats(self):
@@ -377,7 +377,7 @@ class Umami:
         # logger.info(response)
         result = {
             "pv": response['pageviews']['value'],
-            "uv": response['uniques']['value'],
+            "uv": response['visits']['value'],
             "bounces": response['bounces']['value'],
             "page_time": int(response['totaltime']['value'] / response['pageviews']['value']),
         }
