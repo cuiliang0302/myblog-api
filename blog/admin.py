@@ -1,5 +1,8 @@
-from django.contrib import admin
 from .models import Category, Tag, Article, Note, Section, Catalogue
+from django.contrib import admin
+
+admin.site.site_header = '博客后台管理'  # 设置header
+admin.site.site_title = '博客管理'  # 设置title
 
 
 # 文章内容
