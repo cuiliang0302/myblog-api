@@ -90,6 +90,7 @@ class ArticleComment(models.Model):
 
 class SectionComment(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='笔记')
+    url = models.URLField(verbose_name='笔记链接', blank=True, null=True)
     content = models.TextField(verbose_name='评论内容', )
     user = models.ForeignKey(UserInfo, on_delete=models.CASCADE, verbose_name='用户名')
     time = models.DateTimeField(auto_now_add=True, verbose_name='评论时间')

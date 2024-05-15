@@ -38,7 +38,7 @@ class ArticleCommentAdmin(admin.ModelAdmin):
 # 笔记评论记录
 @admin.register(SectionComment)
 class SectionCommentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'section', 'content', 'user', 'time', 'like', 'father')
+    list_display = ('id', 'section', 'url', 'content', 'user', 'time', 'like', 'father')
     list_display_links = ('section', 'user')
 
 
@@ -47,4 +47,3 @@ class SectionCommentAdmin(admin.ModelAdmin):
 class SearchKeyAdmin(admin.ModelAdmin):
     list_display = ('id', 'key')
     list_display_links = ('key',)
-
