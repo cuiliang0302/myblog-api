@@ -1,7 +1,8 @@
 # 项目base镜像文件
-#FROM python:3.11
+#FROM python:3.12
 #ADD ./envs /opt/DRF/envs
-FROM registry.cn-hangzhou.aliyuncs.com/cuiliang_img/myblog_env:latest
+# 项目dockerfile
+FROM registry.cn-shanghai.aliyuncs.com/cuiliang_img/myblog_env:3.12
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone && pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
 ADD . /opt/DRF/
 RUN pip install -r /opt/DRF/requirements.txt && pip install uwsgi
