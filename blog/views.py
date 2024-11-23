@@ -1,5 +1,11 @@
+from collections import defaultdict
+from datetime import date
+from itertools import chain
+
 from PIL import Image
 from django.contrib.sites.models import Site
+from django.db.models import Count
+from django.db.models.expressions import result
 from django.utils import timezone
 from loguru import logger
 from rest_framework import viewsets, status
@@ -17,6 +23,7 @@ from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
 from public.permissions import AdminAllOrGuestGet
+from django.db.models.functions import TruncMonth
 
 
 class ArticleModelViewSet(viewsets.ModelViewSet):
@@ -245,34 +252,65 @@ class ClassifyAPIView(APIView):
 
     @staticmethod
     def get(request):
-        date = request.query_params.get('month')
-        if date:
-            year = date.split("-")[0]
-            month = date.split("-")[1]
-            articles = Article.objects.filter(created_time__year=year).filter(created_time__month=month). \
-                values('id', 'title', 'created_time')
-            return Response(articles, status=status.HTTP_200_OK)
+        query_month = request.query_params.get('month')
+        # logger.error(query_month)
+        if query_month and query_month:
+            year, month = map(int, query_month.split('-'))
+            # 查询指定月份的 Article 和 Section
+            articles = Article.objects.filter(
+                created_time__year=year,
+                created_time__month=month
+            ).values('id', 'title', 'created_time')
+
+            sections = Section.objects.filter(
+                created_time__year=year,
+                created_time__month=month
+            ).values('id', 'title', 'created_time')
+            # 标记来源并合并结果
+            articles = [{"type": "article", **article} for article in articles]
+            sections = [{"type": "section", **section} for section in sections]
+
+            # 合并列表并按时间从近到远排序
+            combined_list = sorted(
+                chain(articles, sections),
+                key=lambda x: x['created_time'],
+                reverse=True
+            )
+            return Response(combined_list, status=status.HTTP_200_OK)
         else:
-            date_list_all = []  # 建立一个列表用来存放所有日期
-            date_obj = Article.objects.filter(is_release=True).values('created_time')
-            for date in date_obj:
-                date = date['created_time'].strftime('%Y-%m')
-                date_list_all.append(date)
-            date_list_count = []
-            # 日期去重
-            for i in date_list_all:
-                date_list_count.append(date_list_all.count(i))
-            date_list_sum = zip(date_list_all, date_list_count)
-            date_list = []
-            result = []
-            for (i, j) in date_list_sum:
-                if (i, j) not in date_list:
-                    info = dict()
-                    info['month'] = i
-                    info['count'] = j
-                    date_list.append((i, j))
-                    result.append(info)
-            return Response(result, status=status.HTTP_200_OK)
+            # 按月份统计 Article
+            article_counts = (
+                Article.objects.annotate(month=TruncMonth('created_time'))
+                .values('month')
+                .annotate(count=Count('id'))
+                .order_by('month')
+            )
+            # 按月份统计 Section
+            section_counts = (
+                Section.objects.annotate(month=TruncMonth('created_time'))
+                .values('month')
+                .annotate(count=Count('id'))
+                .order_by('month')
+            )
+            # 合并统计结果
+            monthly_counts = {}
+
+            for article in article_counts:
+                month_str = article['month'].strftime('%Y-%m')  # 转为 "YYYY-MM" 格式
+                if month_str not in monthly_counts:
+                    monthly_counts[month_str] = {"article": 0, "section": 0}
+                monthly_counts[month_str]["article"] = article["count"]
+
+            for section in section_counts:
+                month_str = section['month'].strftime('%Y-%m')
+                if month_str not in monthly_counts:
+                    monthly_counts[month_str] = {"article": 0, "section": 0}
+                monthly_counts[month_str]["section"] = section["count"]
+
+            # 返回按时间从近到远排序的结果
+            sorted_monthly_counts = dict(sorted(monthly_counts.items(), key=lambda x: x[0], reverse=True))
+
+            return Response(sorted_monthly_counts, status=status.HTTP_200_OK)
 
 
 class QRcodeAPIView(APIView):
