@@ -1,3 +1,4 @@
+from loguru import logger
 from rest_framework import serializers
 from rest_framework_recursive.fields import RecursiveField
 from account.models import UserInfo
@@ -33,9 +34,27 @@ class SearchKeySerializer(serializers.ModelSerializer):
         fields = ("key",)
 
 
-class LeaveMessageSerializer(serializers.ModelSerializer):
+class LeaveMessageListSerializer(serializers.ModelSerializer):
     """
-    留言记录序列化器
+    留言记录列表序列化器
+    """
+    username = serializers.ReadOnlyField(source='user.username')
+    photo = serializers.ReadOnlyField(source='user.photo')
+    child_count = serializers.SerializerMethodField()
+    father_name = serializers.ReadOnlyField(source='get_father_name')
+
+    class Meta:
+        model = LeaveMessage
+        fields = "__all__"
+
+    def get_child_count(self, obj):
+        # 返回子回复个数
+        return LeaveMessage.objects.filter(root=obj.id).count() - 1
+
+
+class LeaveMessageInfoSerializer(serializers.ModelSerializer):
+    """
+    留言记录列表序列化器
     """
     username = serializers.ReadOnlyField(source='user.username')
     photo = serializers.ReadOnlyField(source='user.photo')

@@ -1,4 +1,6 @@
 from django.db import models
+from loguru import logger
+
 from account.models import UserInfo
 from blog.models import Section, Article
 
@@ -40,6 +42,7 @@ class LeaveMessage(models.Model):
     like = models.IntegerField(verbose_name='留言点赞数', default=0)
     father = models.ForeignKey('self', verbose_name='父留言', on_delete=models.CASCADE, blank=True, null=True,
                                related_name='sub')
+    root = models.IntegerField(verbose_name='根留言ID', blank=True, null=True)
 
     class Meta:
         ordering = ('-time',)

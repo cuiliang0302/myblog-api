@@ -24,7 +24,7 @@ class SectionHistoryAdmin(admin.ModelAdmin):
 # 用户留言记录
 @admin.register(LeaveMessage)
 class LeaveMessageAdmin(admin.ModelAdmin):
-    list_display = ('id', 'content', 'user', 'time', 'like', 'father')
+    list_display = ('id', 'content', 'user', 'time', 'like', 'father', 'root')
     list_display_links = ('content', 'user')
 
 

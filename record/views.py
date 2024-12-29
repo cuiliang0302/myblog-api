@@ -2,6 +2,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 from django.db.models import Count, Q
 from django.utils import timezone
+from loguru import logger
 from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -13,9 +14,11 @@ from blog.models import Article, Section, Category, Note
 from blog.serializers import ArticleListSerializer, SectionSerializer
 from account.models import SearchKey
 from public.permissions import AuthenticatedAllOrGuestGetPat, AdminAllOrGuestGetPutPost
+from public.utils import MyPageNumber
 from record.models import LeaveMessage, ArticleComment, SectionComment, ArticleHistory, SectionHistory
-from record.serializers import SearchHistorySerializer, SearchKeySerializer, LeaveMessageSerializer, \
-    ArticleCommentSerializer, SectionCommentSerializer, ArticleHistorySerializer, SectionHistorySerializer
+from record.serializers import SearchHistorySerializer, SearchKeySerializer, \
+    ArticleCommentSerializer, SectionCommentSerializer, ArticleHistorySerializer, SectionHistorySerializer, \
+    LeaveMessageListSerializer, LeaveMessageInfoSerializer
 
 
 class SearchHotAPIView(APIView):
@@ -81,7 +84,8 @@ class SearchAPIView(APIView):
                             history_serializer.save()
                 return Response(searchSerializer.data, status=status.HTTP_200_OK)
             else:
-                return Response({'msg': '查询记录为空，请更换关键字或切换为笔记搜索'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'msg': '查询记录为空，请更换关键字或切换为笔记搜索'},
+                                status=status.HTTP_400_BAD_REQUEST)
         else:
             if order == 'view':
                 searchResult = Section.objects.filter(
@@ -112,7 +116,8 @@ class SearchAPIView(APIView):
                         history_serializer.save()
                 return Response(searchSerializer.data, status=status.HTTP_200_OK)
             else:
-                return Response({'msg': '查询记录为空，请更换关键字或切换为文章搜索'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'msg': '查询记录为空，请更换关键字或切换为文章搜索'},
+                                status=status.HTTP_400_BAD_REQUEST)
 
 
 class LeaveMessageModelViewSet(viewsets.ModelViewSet):
@@ -120,7 +125,14 @@ class LeaveMessageModelViewSet(viewsets.ModelViewSet):
     留言增删改查
     """
     permission_classes = (AuthenticatedAllOrGuestGetPat,)
-    serializer_class = LeaveMessageSerializer
+    pagination_class = MyPageNumber
+
+    # 重写选择序列化器
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return LeaveMessageListSerializer
+        else:
+            return LeaveMessageInfoSerializer
 
     # 重写查询方法
     def get_queryset(self):
@@ -128,6 +140,17 @@ class LeaveMessageModelViewSet(viewsets.ModelViewSet):
             return LeaveMessage.objects.filter(father=None)
         else:
             return LeaveMessage.objects.all()
+
+    # 重写创建方法
+    def perform_create(self, serializer):
+        # 如果没有传入 root，则设置 root 为当前对象的 id
+        validated_data = serializer.validated_data
+        root = validated_data.get('root', None)
+        leave_message = serializer.save()
+        if root is None:
+            leave_message.root = leave_message.id
+            leave_message.save()  # 更新 root 后再次保存
+        return leave_message
 
 
 class ArticleCommentModelViewSet(viewsets.ModelViewSet):
@@ -261,7 +284,8 @@ class ArticleHistoryAPIView(APIView):
             article_history.is_collect = is_collect
             article_history.time = timezone.localtime()
             article_history.save()
-            return Response({'is_collect': article_history.is_collect, 'msg': '文章收藏更新成功！'}, status=status.HTTP_200_OK)
+            return Response({'is_collect': article_history.is_collect, 'msg': '文章收藏更新成功！'},
+                            status=status.HTTP_200_OK)
         else:
             return Response({'msg': '文章收藏更新失败！'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -315,7 +339,8 @@ class SectionHistoryAPIView(APIView):
             section_history.is_collect = is_collect
             section_history.time = timezone.localtime()
             section_history.save()
-            return Response({'is_collect': section_history.is_collect, 'msg': '文章收藏更新成功！'}, status=status.HTTP_200_OK)
+            return Response({'is_collect': section_history.is_collect, 'msg': '文章收藏更新成功！'},
+                            status=status.HTTP_200_OK)
         else:
             return Response({'msg': '文章收藏更新失败！'}, status=status.HTTP_400_BAD_REQUEST)
 
