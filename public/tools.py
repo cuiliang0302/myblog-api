@@ -815,6 +815,7 @@ class OAuth:
         access_token_url = 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token'
         access_response = requests.post(access_token_url, headers=access_token_headers,
                                         data=urlencode(access_token_data)).json()
+        print(access_response)
         print(access_response['access_token'])
         # 使用Access Token获取用户信息
         userinfo_headers = {
