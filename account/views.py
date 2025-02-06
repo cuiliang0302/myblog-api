@@ -1,6 +1,7 @@
 from loguru import logger
 import re
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, serializers
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,15 +22,17 @@ class LoginAPIView(APIView):
     def post(request):
         # 实例化得到一个序列化类的对象
         serializer = LoginSerializer(data=request.data)
-        # 序列化类的对象的校验方法
-        serializer.is_valid(raise_exception=True)
+        # 校验是否通过
+        if not serializer.is_valid():
+            # 如果验证失败，抛出自定义异常
+            raise serializers.ValidationError({"message": "账号或密码错误"})
         # 如果通过,表示登录成功,返回手动签发的token
         token = serializer.context.get('token')
-        userid = serializer.context.get('userid')
+        user_id = serializer.context.get('userid')
         username = serializer.context.get('username')
         result = dict()
         result['token'] = token
-        result['userid'] = userid
+        result['user_id'] = user_id
         result['username'] = username
         return Response(result, status=status.HTTP_200_OK)
 
