@@ -29,7 +29,7 @@ class SearchHotAPIView(APIView):
     @cache_response()
     def get(self, request):
         result = []
-        for i in SearchKey.objects.annotate(user_count=Count('userinfo')).order_by('-user_count'):
+        for i in SearchKey.objects.all().order_by('-count')[:10]:
             result.append(i.key)
         return Response(result, status=status.HTTP_200_OK)
 
@@ -82,6 +82,11 @@ class SearchAPIView(APIView):
                         history_serializer = SearchHistorySerializer(user, data, partial=True)
                         if history_serializer.is_valid(raise_exception=True):
                             history_serializer.save()
+                else:
+                    key = SearchKey.objects.filter(key=key).first()
+                    # logger.info("找到关键词了，要count++")
+                    key.count = key.count + 1
+                    key.save()
                 return Response(searchSerializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({'msg': '查询记录为空，请更换关键字或切换为笔记搜索'},
@@ -101,6 +106,10 @@ class SearchAPIView(APIView):
                     key_serializer = SearchKeySerializer(data={"key": key})
                     if key_serializer.is_valid(raise_exception=True):
                         key_serializer.save()
+                else:
+                    key = SearchKey.objects.filter(key=key).first()
+                    key.count = key.count + 1
+                    key.save()
                 if user_id:
                     # 用户登录了
                     user = UserInfo.objects.get(id=user_id)

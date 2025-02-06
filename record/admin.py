@@ -45,5 +45,6 @@ class SectionCommentAdmin(admin.ModelAdmin):
 # 搜索关键词
 @admin.register(SearchKey)
 class SearchKeyAdmin(admin.ModelAdmin):
-    list_display = ('id', 'key')
-    list_display_links = ('key',)
+    list_display = ('id', 'key', 'count')
+    list_display_links = ['key']
+    search_fields = ['key']

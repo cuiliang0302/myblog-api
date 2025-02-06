@@ -15,10 +15,12 @@ class UserSource(models.Model):
 
 class SearchKey(models.Model):
     key = models.CharField('关键词', max_length=100)
+    count = models.IntegerField('搜索次数',default=1)
 
     class Meta:
         verbose_name = '搜索关键词'
         verbose_name_plural = verbose_name
+        ordering = ("-count",)
 
     def __str__(self):
         return self.key
