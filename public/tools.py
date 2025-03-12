@@ -327,14 +327,17 @@ class Umami:
         self.method = ''
         self.params = {}
         self.token = ''
+        self.header = {'content-type': 'application/json'}
         self.__get_token__()
 
     # 请求接口数据
     def __request_data__(self):
         if self.method == "post":
-            response = httpx.post(self.base + self.path, data=self.params)
+            response = httpx.post(url=self.base + self.path, headers=self.header, data=self.params)
             if response.status_code == 200:
                 return response.json()
+            else:
+                logger.error(response)
         else:
             headers = {'Authorization': 'Bearer ' + self.token}
             response = httpx.get(self.base + self.path, headers=headers, params=self.params)
@@ -346,11 +349,12 @@ class Umami:
     def __get_token__(self):
         self.path = '/api/auth/login'
         self.method = 'post'
-        self.params = {
+        self.params = json.dumps({
             "username": settings.UMAMI_USERNAME,
             "password": settings.UMAMI_PASSWORD
-        }
+        })
         response = self.__request_data__()
+        # logger.error(response)
         token = response['token']
         logger.info(token)
         self.token = token
@@ -361,8 +365,8 @@ class Umami:
         self.method = 'get'
         self.params = {}
         response = self.__request_data__()
-        # logger.info(response)
-        return response['x']
+        logger.info(response)
+        return response['visitors']
 
     # 获取访问量(最近24h)
     def get_stats(self):
