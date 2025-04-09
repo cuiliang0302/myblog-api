@@ -14,7 +14,7 @@ from blog.models import Article, Section, Category, Note
 from blog.serializers import ArticleListSerializer, SectionSerializer
 from account.models import SearchKey
 from public.permissions import AuthenticatedAllOrGuestGetPat, AdminAllOrGuestGetPutPost
-from public.utils import MyPageNumber
+from public.utils import MyPageNumber, get_user_id_from_token
 from record.models import LeaveMessage, ArticleComment, SectionComment, ArticleHistory, SectionHistory
 from record.serializers import SearchHistorySerializer, SearchKeySerializer, \
     ArticleCommentSerializer, SectionCommentSerializer, ArticleHistorySerializer, SectionHistorySerializer, \
@@ -51,7 +51,7 @@ class SearchAPIView(APIView):
     @staticmethod
     def get(request):
         key = request.query_params.get('key')
-        user_id = request.query_params.get('user_id')
+        user_id = get_user_id_from_token(request)
         kind = request.query_params.get('kind')
         order = request.query_params.get('order')
         if kind == 'article':
@@ -76,7 +76,6 @@ class SearchAPIView(APIView):
                     key.save()
                 if user_id:
                     # 用户登录了
-                    logger.info("用户登录状态")
                     user = UserInfo.objects.get(id=user_id)
                     search_list = []
                     # 获取所有的key
@@ -113,6 +112,7 @@ class SearchAPIView(APIView):
                     key.save()
                 if user_id:
                     # 用户登录了
+                    logger.info(user_id)
                     user = UserInfo.objects.get(id=user_id)
                     search_list = []
                     # 获取所有的key
