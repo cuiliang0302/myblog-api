@@ -15,7 +15,7 @@ class UserSource(models.Model):
 
 class SearchKey(models.Model):
     key = models.CharField('关键词', max_length=100)
-    count = models.IntegerField('搜索次数',default=1)
+    count = models.IntegerField('搜索次数', default=1)
 
     class Meta:
         verbose_name = '搜索关键词'
@@ -37,7 +37,8 @@ class UserInfo(AbstractUser):
     phone = models.CharField(verbose_name='手机号', max_length=20, blank=True, null=True)
     sex = models.CharField(verbose_name='性别', max_length=1, choices=Sex.choices, default=Sex.men)
     web = models.URLField(verbose_name='个人网站', blank=True, null=True)
-    signature = models.TextField(verbose_name='个性签名', max_length=200, default="这个人很懒，什么都没留下！")
+    signature = models.TextField(verbose_name='个性签名', max_length=200, default="这个人很懒，什么都没留下！",
+                                 blank=True, null=True)
     photo = models.URLField(verbose_name='头像', default='https://oss.cuiliangblog.cn/images/photo.jpg')
     area_code = models.CharField(verbose_name='地区编号', max_length=10, blank=True, null=True)
     area_name = models.CharField(verbose_name='地区名称', max_length=20, blank=True, null=True)
