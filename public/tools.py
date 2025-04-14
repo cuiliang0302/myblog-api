@@ -680,7 +680,7 @@ class OAuth:
         refresh = RefreshToken.for_user(user)
         result = dict()
         result['token'] = str(refresh.access_token)
-        result['userid'] = user.id
+        result['user_id'] = user.id
         result['username'] = user.username
         return result
 

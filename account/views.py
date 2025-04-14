@@ -258,7 +258,7 @@ class OAuthCallbackAPIView(APIView):
         kind = request.data.get('kind')
         code = request.data.get('code')
         redirect_uri = request.data.get('redirect_uri')
-        print(platform, code, redirect_uri, kind)
+        logger.info(platform, code, redirect_uri, kind)
         auth = OAuth(platform, kind, code, redirect_uri)
         result = {}
         if platform == 'WEIBO':
