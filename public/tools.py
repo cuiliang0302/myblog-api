@@ -356,7 +356,7 @@ class Umami:
         response = self.__request_data__()
         # logger.error(response)
         token = response['token']
-        logger.info(token)
+        # logger.info(token)
         self.token = token
 
     # 获取在线用户数
@@ -365,7 +365,7 @@ class Umami:
         self.method = 'get'
         self.params = {}
         response = self.__request_data__()
-        logger.info(response)
+        # logger.info(response)
         return response['visitors']
 
     # 获取访问量(最近24h)

@@ -6,7 +6,7 @@ app_name = "record"
 urlpatterns = [
     path('searchHot/', views.SearchHotAPIView.as_view()),
     # 获取搜索词排序
-    path('searchHistory/<int:pk>/', views.SearchHistoryAPIView.as_view()),
+    path('searchHistory/', views.searchHistoryAPIView.as_view()),
     # 获取搜索记录
     path('search/', views.SearchAPIView.as_view()),
     # 搜索文章

@@ -1,5 +1,7 @@
 from collections import Counter
 from datetime import datetime, timedelta
+
+from django.db import transaction
 from django.db.models import Count, Q
 from django.utils import timezone
 from loguru import logger
@@ -7,7 +9,6 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import generics
 from rest_framework_extensions.cache.decorators import cache_response
 from account.models import UserInfo
 from blog.models import Article, Section, Category, Note
@@ -16,9 +17,8 @@ from account.models import SearchKey
 from public.permissions import AuthenticatedAllOrGuestGetPat, AdminAllOrGuestGetPutPost
 from public.utils import MyPageNumber, get_user_id_from_token
 from record.models import LeaveMessage, ArticleComment, SectionComment, ArticleHistory, SectionHistory
-from record.serializers import SearchHistorySerializer, SearchKeySerializer, \
-    ArticleCommentSerializer, SectionCommentSerializer, ArticleHistorySerializer, SectionHistorySerializer, \
-    LeaveMessageListSerializer, LeaveMessageInfoSerializer
+from record.serializers import SearchKeySerializer, ArticleCommentSerializer, SectionCommentSerializer, \
+    ArticleHistorySerializer, SectionHistorySerializer, LeaveMessageListSerializer, LeaveMessageInfoSerializer
 
 
 class SearchHotAPIView(APIView):
@@ -30,17 +30,24 @@ class SearchHotAPIView(APIView):
     def get(self, request):
         result = []
         for i in SearchKey.objects.all().order_by('-count'):
-            result.append(i.key)
+            result.append(i.keys)
         return Response(result, status=status.HTTP_200_OK)
 
 
-class SearchHistoryAPIView(generics.RetrieveAPIView):
+class searchHistoryAPIView(APIView):
     """
-    获取搜索记录
+    获取用户搜索记录
     """
 
-    queryset = UserInfo.objects.all()
-    serializer_class = SearchHistorySerializer
+    @staticmethod
+    def get(request):
+        user_id = get_user_id_from_token(request)
+        user = UserInfo.objects.get(id=user_id)
+        result = []
+        for i in user.search.all():
+            # logger.info(i)
+            result.append(i.keys)
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class SearchAPIView(APIView):
@@ -49,85 +56,56 @@ class SearchAPIView(APIView):
     """
 
     @staticmethod
-    def get(request):
+    def _search(queryset, key, order):
+        """通用的搜索逻辑"""
+        if order == 'view':
+            return queryset.filter(
+                Q(title__icontains=key) | Q(body__icontains=key)
+            ).order_by('-view')
+        return queryset.filter(
+            Q(title__icontains=key) | Q(body__icontains=key)
+        )
+
+
+    @staticmethod
+    def _update_user_search_history(user_id, key_id):
+        """更新搜素词和用户的搜索历史"""
+        # logger.info(user_id)
+        # logger.info(key_id)
+        # 获取或创建搜索关键词
+        search_key, created = SearchKey.objects.get_or_create(keys=key_id)
+        # 如果搜索关键词存在，更新其搜索次数
+        if not created:
+            search_key.count += 1
+            search_key.save()
+        if user_id:
+            user = UserInfo.objects.get(id=user_id)
+            # 将该搜索关键词添加到用户的搜索记录中
+            user.search.add(search_key)
+            user.save()
+
+    def get(self, request):
         key = request.query_params.get('key')
         user_id = get_user_id_from_token(request)
         kind = request.query_params.get('kind')
         order = request.query_params.get('order')
+        # 判断搜索内容是文章还是笔记
         if kind == 'article':
-            if order == 'view':
-                searchResult = Article.objects.filter(is_release=1).filter(
-                    Q(title__icontains=key) | Q(body__icontains=key)).order_by('-view')
-            else:
-                searchResult = Article.objects.filter(is_release=1).filter(
-                    Q(title__icontains=key) | Q(body__icontains=key))
-            if searchResult.exists():
-                # 文章查到了
-                searchSerializer = ArticleListSerializer(instance=searchResult, many=True)
-                if not SearchKey.objects.filter(key__icontains=key).exists():
-                    # 没找到搜索关键词，新增
-                    key_serializer = SearchKeySerializer(data={"key": key})
-                    if key_serializer.is_valid(raise_exception=True):
-                        key_serializer.save()
-                else:
-                    key = SearchKey.objects.filter(key=key).first()
-                    # logger.info("找到关键词了，要count++")
-                    key.count = key.count + 1
-                    key.save()
-                if user_id:
-                    # 用户登录了
-                    user = UserInfo.objects.get(id=user_id)
-                    search_list = []
-                    # 获取所有的key
-                    for search_key in user.search.all():
-                        search_list.append(search_key.id)
-                    key_id = SearchKey.objects.filter(key=key).first().id
-                    search_list.append(key_id)
-                    data = {"search": search_list}
-                    history_serializer = SearchHistorySerializer(user, data, partial=True)
-                    if history_serializer.is_valid(raise_exception=True):
-                        history_serializer.save()
-                return Response(searchSerializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({'msg': '查询记录为空，请更换关键字或切换为笔记搜索'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            searchResult = self._search(Article.objects.filter(is_release=1), key, order)
+            searchSerializer = ArticleListSerializer(instance=searchResult, many=True)
         else:
-            if order == 'view':
-                searchResult = Section.objects.filter(
-                    Q(title__icontains=key) | Q(body__icontains=key)).order_by('-view')
-            else:
-                searchResult = Section.objects.filter(
-                    Q(title__icontains=key) | Q(body__icontains=key))
-            if searchResult.exists():
-                # 笔记查到了
-                searchSerializer = SectionSerializer(instance=searchResult, many=True)
-                if not SearchKey.objects.filter(key__icontains=key).exists():
-                    # 没找到搜索关键词，新增
-                    key_serializer = SearchKeySerializer(data={"key": key})
-                    if key_serializer.is_valid(raise_exception=True):
-                        key_serializer.save()
-                else:
-                    key = SearchKey.objects.filter(key=key).first()
-                    key.count = key.count + 1
-                    key.save()
-                if user_id:
-                    # 用户登录了
-                    logger.info(user_id)
-                    user = UserInfo.objects.get(id=user_id)
-                    search_list = []
-                    # 获取所有的key
-                    for search_key in user.search.all():
-                        search_list.append(search_key.id)
-                    key_id = SearchKey.objects.filter(key=key).first().id
-                    search_list.append(key_id)
-                    data = {"search": search_list}
-                    history_serializer = SearchHistorySerializer(user, data, partial=True)
-                    if history_serializer.is_valid(raise_exception=True):
-                        history_serializer.save()
-                return Response(searchSerializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response({'msg': '查询记录为空，请更换关键字或切换为文章搜索'},
-                                status=status.HTTP_400_BAD_REQUEST)
+            searchResult = self._search(Section.objects.all(), key, order)
+            searchSerializer = SectionSerializer(instance=searchResult, many=True)
+
+        if searchResult.exists():
+            # 更新搜索关键词和用户搜索历史
+            self._update_user_search_history(user_id, key)
+            return Response(searchSerializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {'msg': '查询记录为空，请更换关键字或切换为其他类型的搜索'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class LeaveMessageModelViewSet(viewsets.ModelViewSet):

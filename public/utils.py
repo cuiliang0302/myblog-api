@@ -21,9 +21,10 @@ def get_user_id_from_token(request):
         user_authenticator = JWTAuthentication()
         user, _ = user_authenticator.authenticate(request)
         if user and user.is_authenticated:
+            logger.info(f"查询用户id:{user.id}")
             return user.id
     except Exception as e:
-        logger.error(e)
+        logger.error(f"查询用户未登录，信息{e}")
         return None
     return None
 

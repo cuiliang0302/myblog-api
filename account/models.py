@@ -14,7 +14,7 @@ class UserSource(models.Model):
 
 
 class SearchKey(models.Model):
-    key = models.CharField('关键词', max_length=100)
+    keys = models.CharField('关键词', max_length=100, unique=True)
     count = models.IntegerField('搜索次数', default=1)
 
     class Meta:
@@ -23,7 +23,7 @@ class SearchKey(models.Model):
         ordering = ("-count",)
 
     def __str__(self):
-        return self.key
+        return self.keys
 
 
 # 性别枚举类型
