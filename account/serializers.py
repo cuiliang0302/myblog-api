@@ -50,12 +50,9 @@ class UserInfoSerializer(serializers.ModelSerializer):
     # 性别显示文字
     sex_name = serializers.ReadOnlyField(source='get_sex_display')
     # 用户来源
-    source = serializers.SerializerMethodField()
+    source = serializers.ReadOnlyField(source='source.name')
 
     class Meta:
         model = UserInfo
         fields = ['id', 'username', 'email', 'phone', 'sex', 'sex_name', 'web', 'signature', 'photo', 'is_flow',
                   'area_name', 'area_code', 'birthday', 'source']
-
-    def get_source(self, obj):
-        return obj.source.name

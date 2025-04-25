@@ -12,8 +12,6 @@ urlpatterns = [
     # 获取图片地址
     path('cdnRefresh/', views.CdnRefreshAPIView.as_view()),
     # CDN接口刷新接口
-    path('areaData/', views.AreaDataAPIView.as_view()),
-    # 获取省市区编号
 ]
 router = routers.DefaultRouter()
 # 示例用户省份接口

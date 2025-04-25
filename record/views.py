@@ -66,7 +66,6 @@ class SearchAPIView(APIView):
             Q(title__icontains=key) | Q(body__icontains=key)
         )
 
-
     @staticmethod
     def _update_user_search_history(user_id, key_id):
         """更新搜素词和用户的搜索历史"""
@@ -152,7 +151,7 @@ class ArticleCommentModelViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action == 'list':
             article_id = self.request.query_params.get('article')
-            user_id = self.request.query_params.get('user')
+            user_id = get_user_id_from_token(self.request)
             if article_id:
                 # 查询文章所有评论回复记录
                 return ArticleComment.objects.filter(article=article_id).filter(father=None)
@@ -193,7 +192,7 @@ class SectionCommentModelViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.action == 'list':
             section_id = self.request.query_params.get('section')
-            user_id = self.request.query_params.get('user')
+            user_id = get_user_id_from_token(self.request)
             if section_id:
                 # 查询所有笔记评论回复记录
                 return SectionComment.objects.filter(section=section_id).filter(father=None)
@@ -231,7 +230,7 @@ class ArticleHistoryAPIView(APIView):
 
     @staticmethod
     def get(request):
-        user_id = request.query_params.get('user')
+        user_id = get_user_id_from_token(request)
         article_id = request.query_params.get('article')
         if article_id:
             # 获取指定文章信息
@@ -286,7 +285,7 @@ class SectionHistoryAPIView(APIView):
 
     @staticmethod
     def get(request):
-        user_id = request.query_params.get('user')
+        user_id = get_user_id_from_token(request)
         section_id = request.query_params.get('section')
         if section_id:
             # 查询指定笔记记录
@@ -339,9 +338,8 @@ class StatisticsAPIView(APIView):
     """
     permission_classes = (IsAuthenticated,)
 
-    @staticmethod
-    def get(request):
-        user_id = request.query_params.get('user')
+    def get(self, request):
+        user_id = get_user_id_from_token(self.request)
         if user_id:
             result = dict()
             result['article_history'] = ArticleHistory.objects.filter(user=user_id).count()
@@ -362,9 +360,8 @@ class UserEchartsAPIView(APIView):
 
     permission_classes = (IsAuthenticated,)
 
-    @staticmethod
-    def get(request):
-        user_id = request.query_params.get('user')
+    def get(self, request):
+        user_id = get_user_id_from_token(self.request)
         chart = request.query_params.get('chart')
         if user_id and chart:
             # 用户浏览趋势图

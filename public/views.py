@@ -21,7 +21,6 @@ from public.permissions import AdminAllOrGuestGetPost
 from public.serializers import DemoUserSerializer, DemoProvinceSerializer
 from public.tools import Tencent
 from loguru import logger
-from public.areaData import areaList
 from rest_framework.filters import OrderingFilter
 from public.utils import MyPageNumber
 
@@ -113,15 +112,6 @@ class CdnRefreshAPIView(APIView):
             logger.info("操作url:{} 刷新失败！".format(url))
             return Response({'msg': 'cdn刷新失败！'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-class AreaDataAPIView(APIView):
-    """
-    获取省市县编码
-    """
-
-    @staticmethod
-    def get(request):
-        return Response({'areaList': areaList}, status=status.HTTP_200_OK)
 
 
 class ArticleLink(APIView):
