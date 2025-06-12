@@ -1,11 +1,13 @@
 # 项目base镜像文件
-FROM python:3.12
+#FROM python:3.12
+FROM quay.io/fedora/python-312
+USER root
 #ADD ./envs /opt/DRF/envs
 # 项目dockerfile
 #FROM registry.cn-shanghai.aliyuncs.com/cuiliang_img/myblog_env:3.12-5
-RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo 'Asia/Shanghai' >/etc/timezone \
-    && pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
+    && echo 'Asia/Shanghai' >/etc/timezone
+#    && pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple
 ADD . /opt/DRF/
 RUN pip install -r /opt/DRF/requirements.txt && pip install uwsgi
 WORKDIR /opt/DRF/
