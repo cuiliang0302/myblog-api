@@ -32,7 +32,7 @@ BAIDU_TOKEN = env.str('BAIDU_TOKEN')
 # umami统计
 UMAMI_USERNAME = env.str('UMAMI_USERNAME')
 UMAMI_PASSWORD = env.str('UMAMI_PASSWORD')
-UMAMI_ID = '9447ca81-4839-4b2d-a0e3-f795515a2f3b'
+UMAMI_ID = '148a1e4d-f683-4819-a172-7605346b75e7'
 UMAMI_BASE = 'https://umami.cuiliangblog.cn'
 # 语雀笔记token
 YUQUE_TOKEN = env.str('YUQUE_TOKEN')

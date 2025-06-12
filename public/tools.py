@@ -378,7 +378,7 @@ class Umami:
         }
         # logger.info(self.params)
         response = self.__request_data__()
-        # logger.info(response)
+        logger.info(response)
         result = {
             "pv": response['pageviews']['value'],
             "uv": response['visits']['value'],
