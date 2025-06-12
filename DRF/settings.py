@@ -118,10 +118,9 @@ REST_FRAMEWORK = {
 # JWT配置
 SIMPLE_JWT = {
     # 访问令牌有效期，默认5分钟
-    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=15),
     # 刷新令牌有效期，默认14天
-    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=15),
-
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=30),
     # 可选：每次刷新后生成新刷新令牌
     'ROTATE_REFRESH_TOKENS': True,
     # 可选：刷新后旧令牌加入黑名单

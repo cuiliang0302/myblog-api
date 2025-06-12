@@ -12,9 +12,9 @@ urlpatterns = [
     # 获取验证码
     path('setPassword/', views.SetPasswordAPIView.as_view()),
     # 重置密码
-    path('changePassword/<int:user_id>/', views.ChangePasswordAPIView.as_view()),
+    path('changePassword/', views.ChangePasswordAPIView.as_view()),
     # 修改密码
-    path('changeEmail/<int:user_id>/', views.ChangeEmailAPIView.as_view()),
+    path('changeEmail/', views.ChangeEmailAPIView.as_view()),
     # 修改邮箱
     path('changePhone/<int:user_id>/', views.ChangePhoneAPIView.as_view()),
     # 修改手机

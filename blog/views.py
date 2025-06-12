@@ -1,16 +1,9 @@
-from collections import defaultdict
-from datetime import date
 from itertools import chain
-
-from PIL import Image
-from django.contrib.sites.models import Site
 from django.db.models import Count
-from django.db.models.expressions import result
 from django.utils import timezone
 from loguru import logger
 from rest_framework import viewsets, status
 from django_filters.rest_framework import DjangoFilterBackend
-import qrcode
 from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
@@ -311,50 +304,6 @@ class ClassifyAPIView(APIView):
             sorted_monthly_counts = dict(sorted(monthly_counts.items(), key=lambda x: x[0], reverse=True))
 
             return Response(sorted_monthly_counts, status=status.HTTP_200_OK)
-
-
-class QRcodeAPIView(APIView):
-    """
-    生成文章笔记二维码
-    """
-
-    @staticmethod
-    def get(request):
-        url = request.query_params.get('url')
-        logo = './static/file/logo.png'
-        QRcode = './static/file/QRcode.png'
-        qr = qrcode.QRCode(
-            version=2,
-            error_correction=qrcode.constants.ERROR_CORRECT_H,
-            box_size=8,
-            border=1
-        )
-        qr.add_data(url)
-        qr.make(fit=True)
-        # 互动二Image实例并把颜色模式转换成RGBA
-        img = qr.make_image()
-        img = img.convert("RGBA")
-        icon = Image.open(logo)  # 打开logo文件
-        img_w, img_h = img.size
-        factor = 4
-        # 计算logo尺寸
-        size_w = int(img_w / factor)
-        size_h = int(img_h / factor)
-        # 比较并重新设置logo文件的尺寸
-        icon_w, icon_h = icon.size
-        if icon_w > size_w:
-            icon_w = size_w
-        if icon_h > size_h:
-            icon_h = size_h
-        icon = icon.resize((icon_w, icon_h), Image.ANTIALIAS)
-        # 计算logo的位置，并且复制到二维码中
-        w = int((img_w - icon_w) / 2)
-        h = int((img_h - icon_h) / 2)
-        icon = icon.convert("RGBA")
-        img.paste(icon, (w, h), icon)
-        img.save(QRcode)  # 保存二维码qr.png
-        return Response({'url': Site.objects.get_current().domain + '/static/file/QRcode.png'},
-                        status=status.HTTP_200_OK)
 
 
 class CatalogueModelViewSet(viewsets.ModelViewSet):

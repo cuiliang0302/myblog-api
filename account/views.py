@@ -10,6 +10,7 @@ from account.serializers import LoginSerializer, UserInfoSerializer
 from public.tools import AuthCode, OAuth
 from django.conf import settings
 from public.permissions import AdminAllOrGuestGetPost
+from public.utils import get_user_id_from_token
 
 
 class LoginAPIView(APIView):
@@ -136,8 +137,13 @@ class UserInfoModelViewSet(viewsets.ModelViewSet):
     用户信息增删改查
     """
     permission_classes = (IsAuthenticated,)
-    queryset = UserInfo.objects.all()
     serializer_class = UserInfoSerializer
+
+    # 重写queryset方法
+    def get_queryset(self):
+        # 获取查询参数
+        user_id = get_user_id_from_token(self.request)
+        return UserInfo.objects.filter(id=user_id)
 
 
 class SetPasswordAPIView(APIView):
@@ -175,7 +181,9 @@ class ChangePasswordAPIView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
-    def put(request, user_id):
+    def put(request):
+        logger.info("修改密码了啊")
+        user_id = get_user_id_from_token(request)
         oldPassword = request.data.get('oldPassword')
         newPassword = request.data.get('newPassword')
         user = UserInfo.objects.get(id=user_id)
@@ -194,10 +202,10 @@ class ChangeEmailAPIView(APIView):
     permission_classes = (IsAuthenticated,)
 
     @staticmethod
-    def put(request, user_id):
+    def put(request):
+        user_id = get_user_id_from_token(request)
         newEmail = request.data.get('newEmail')
         code = request.data.get('code')
-        print(newEmail, code)
         user = UserInfo.objects.get(id=user_id)
         auth = AuthCode(newEmail)
         if auth.check_code(code):
@@ -258,7 +266,7 @@ class OAuthCallbackAPIView(APIView):
         kind = request.data.get('kind')
         code = request.data.get('code')
         redirect_uri = request.data.get('redirect_uri')
-        print(platform, code, redirect_uri, kind)
+        logger.info(platform, code, redirect_uri, kind)
         auth = OAuth(platform, kind, code, redirect_uri)
         result = {}
         if platform == 'WEIBO':

@@ -1,27 +1,8 @@
 from loguru import logger
 from rest_framework import serializers
 from rest_framework_recursive.fields import RecursiveField
-from account.models import UserInfo
 from account.models import SearchKey
 from record.models import LeaveMessage, ArticleComment, SectionComment, ArticleHistory, SectionHistory
-
-
-class SearchHistorySerializer(serializers.ModelSerializer):
-    """
-    用户搜索记录(热门搜索)序列化器
-    """
-    keys = serializers.SerializerMethodField()
-
-    # 查询多对多搜索关键词
-    def get_keys(self, obj):
-        keys = []
-        for i in obj.search.all():
-            keys.append(i.key)
-        return keys
-
-    class Meta:
-        model = UserInfo
-        fields = ("keys", "search")
 
 
 class SearchKeySerializer(serializers.ModelSerializer):
