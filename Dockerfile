@@ -6,8 +6,8 @@ USER root
 # 项目dockerfile
 #FROM registry.cn-shanghai.aliyuncs.com/cuiliang_img/myblog_env:3.12-5
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
-    && echo 'Asia/Shanghai' >/etc/timezone
-#    && pip config set global.index-url https://mirrors.cloud.tencent.com/pypi/simple
+    && echo 'Asia/Shanghai' >/etc/timezone \
+    && pip config set global.index-url  https://pypi.tuna.tsinghua.edu.cn/simple
 ADD . /opt/DRF/
 RUN pip install -r /opt/DRF/requirements.txt && pip install uwsgi
 WORKDIR /opt/DRF/
@@ -20,6 +20,6 @@ WORKDIR /opt/DRF/
 #CMD ["python","manage.py","runserver","0.0.0.0:8000"]
 # 线上环境
 EXPOSE 8000
-ENV PROJECT_ENV prod
-ENV DJANGO_SETTINGS_MODULE DRF.settings
+ENV PROJECT_ENV=prod
+ENV DJANGO_SETTINGS_MODULE=DRF.settings
 CMD ["sh","start.sh"]

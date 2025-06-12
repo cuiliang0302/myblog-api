@@ -1,7 +1,7 @@
-alipay-sdk-python==3.7.322
+alipay-sdk-python==3.7.603
 aliyun-python-sdk-cms==7.0.33
 aliyun-python-sdk-core==2.16.0
-aliyun-python-sdk-ecs==4.24.78
+aliyun-python-sdk-ecs==4.24.82
 anyio==3.6.1
 APScheduler==3.9.1
 asgiref==3.7.2
@@ -41,7 +41,7 @@ loguru==0.5.3
 Markdown==3.7
 oauthlib==3.1.1
 optionaldict==0.1.2
-packaging==21.3
+packaging==25.0
 pillow==11.0.0
 pyasn1==0.4.8
 pycparser==2.21
