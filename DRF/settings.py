@@ -192,6 +192,7 @@ if env_name == 'dev':  # 开发环境
     STATICFILES_DIRS = [
         os.path.join(BASE_DIR, "static")
     ]
+    # STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 else:  # 生产环境
     # 指定样式收集目录
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')

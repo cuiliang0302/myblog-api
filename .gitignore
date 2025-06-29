@@ -10,7 +10,3 @@ file
 /management/migrations/
 /public/management/
 /record/management/
-/static/admin/
-/static/dist/
-/static/mdeditor/
-/static/rest_framework/
