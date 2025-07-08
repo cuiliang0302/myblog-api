@@ -134,10 +134,8 @@ CSRF_TRUSTED_ORIGINS = (
     'https://www.cuiliangblog.cn',
     'https://m.cuiliangblog.cn',
 )
-# 允许携带cookie
+# 允许携带 cookie
 CORS_ALLOW_CREDENTIALS = True
-# 允许所有
-CORS_ORIGIN_ALLOW_ALL = True
 
 # 自定义user表扩展系统用户表
 AUTH_USER_MODEL = 'account.UserInfo'
