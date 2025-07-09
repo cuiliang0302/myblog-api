@@ -127,14 +127,16 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
 }
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8080',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000',
     'https://api.cuiliangblog.cn',
     'https://www.cuiliangblog.cn',
     'https://m.cuiliangblog.cn',
 ]
 # 允许指定访问来源
 CSRF_TRUSTED_ORIGINS = (
-    'http://127.0.0.1:8080',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:3000',
     'https://api.cuiliangblog.cn',
 )
 # 允许携带 cookie
