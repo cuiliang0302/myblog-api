@@ -126,13 +126,16 @@ SIMPLE_JWT = {
     # 可选：刷新后旧令牌加入黑名单
     'BLACKLIST_AFTER_ROTATION': True,
 }
-
-# 允许指定访问来源
-CSRF_TRUSTED_ORIGINS = (
+CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:8080',
     'https://api.cuiliangblog.cn',
     'https://www.cuiliangblog.cn',
     'https://m.cuiliangblog.cn',
+]
+# 允许指定访问来源
+CSRF_TRUSTED_ORIGINS = (
+    'http://127.0.0.1:8080',
+    'https://api.cuiliangblog.cn',
 )
 # 允许携带 cookie
 CORS_ALLOW_CREDENTIALS = True
