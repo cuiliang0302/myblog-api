@@ -11,8 +11,10 @@ from django_apscheduler.models import DjangoJobExecution
 from django.conf import settings
 from loguru import logger
 from account.models import UserInfo
-from blog.models import Article, Section
+from blog.models import Article, Section, Note
 from django.contrib.sites.models import Site
+
+from public.tools import Yuque
 
 
 def sitemap_job():
@@ -84,6 +86,20 @@ def check_ssl_job():
     logger.info('ssl证书检查完成，还剩{0}天，执行时间：{1}'.format(remain_day, datetime.now()))
 
 
+def async_note_job():
+    """
+    同步笔记内容
+    """
+    logger.info('同步笔记内容任务开始执行')
+    note = Note.objects.order_by('updated_time')[0]
+    # logger.error(note)
+    yuque = Yuque(settings.YUQUE_TOKEN)
+    if yuque.async_note(note.id):
+        logger.info("笔记定时同步任务执行成功")
+    else:
+        logger.info("笔记定时同步任务执行失败")
+
+
 @util.close_old_connections
 def delete_old_job_executions(max_age=604_800):
     DjangoJobExecution.objects.delete_old_job_executions(max_age)
@@ -116,6 +132,17 @@ class Command(BaseCommand):
             misfire_grace_time=60
         )
         logger.info("添加check_ssl_job任务成功")
+
+        scheduler.add_job(
+            async_note_job,
+            trigger=CronTrigger(hour="1-5", minute="00"),  # Every 10 seconds
+            # trigger=CronTrigger(second='*/10'),  # Every 10 seconds
+            id="async_note_job",  # The `id` assigned to each job MUST be unique
+            max_instances=5,
+            replace_existing=True,
+            misfire_grace_time=60
+        )
+        logger.info("添加async_note_job任务成功")
 
         scheduler.add_job(
             delete_old_job_executions,

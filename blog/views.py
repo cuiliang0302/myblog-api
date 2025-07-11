@@ -347,55 +347,8 @@ class SyncNoteContentAPIView(APIView):
     @staticmethod
     def post(request):
         note_id = request.data.get('note_id')
-        namespace = Note.objects.get(id=note_id).namespace
-        logger.info("开始获取%s笔记内容" % namespace)
         yuque = Yuque(settings.YUQUE_TOKEN)
-        try:
-            # 获取笔记目录
-            yuque.get_repo_catalogue(namespace)
-            catalogue_list = yuque.repo_catalogue
-            # 获取笔记内容
-            for i in catalogue_list:
-                if i['slug']:
-                    yuque.get_repo_content(namespace, i['slug'])
-            content_list = yuque.repo_content
-            logger.info('笔记内容获取完成')
-            # 遍历数据库对比接口，删除失效的文档
-            content_id_list = []
-            for j in content_list:
-                content_id_list.append(j['id'])
-            for k in Section.objects.filter(note_id=note_id):
-                if k.id not in content_id_list:
-                    Section.objects.get(id=k.id).delete()
-            logger.info('过期笔记清理完成')
-            # 笔记内容入库
-            for item in content_list:
-                # logger.error(item)
-                item['note_id'] = note_id
-                item['created_time'] = item['created_at']
-                item['modified_time'] = item['content_updated_at']
-                del item['created_at'], item['content_updated_at']
-                # logger.error(item)
-                content = {
-                    "id": item['id'],
-                }
-                Section.objects.update_or_create(defaults=item, **content)
-            logger.info('笔记入库完成')
-            # 笔记目录入库
-            catalogue = dict()
-            catalogue['catalogue'] = catalogue_list
-            catalogue['note_id'] = note_id
-            content = {
-                "note_id": catalogue['note_id'],
-            }
-            Catalogue.objects.update_or_create(defaults=catalogue, **content)
-            logger.info('目录入库完成')
-            # 更新笔记信息
-            note = Note.objects.get(id=note_id)
-            note.updated_time = timezone.now()
-            note.items_count = Section.objects.filter(note=note_id).count()
-            note.save()
+        if yuque.async_note(note_id):
             return Response({'msg': '笔记内容同步成功'}, status=status.HTTP_200_OK)
-        except Exception as e:
-            logger.error(e)
+        else:
             return Response({'msg': '笔记内容同步失败'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -38,6 +38,8 @@ from alipay.aop.api.DefaultAlipayClient import DefaultAlipayClient
 import traceback
 from django.contrib.sites.models import Site
 
+from blog.models import Section, Note, Catalogue
+
 tz = zoneinfo.ZoneInfo("Asia/Shanghai")
 
 
@@ -1113,3 +1115,57 @@ class Yuque:
         info['created_at'] = response['data']['created_at']
         info['content_updated_at'] = response['data']['content_updated_at']
         self.repo_content.append(info)
+
+    # 同步指定id的笔记
+    def async_note(self, note_id):
+        namespace = Note.objects.get(id=note_id).namespace
+        logger.info("开始同步笔记:%s" % namespace)
+        try:
+            # 获取笔记目录
+            self.get_repo_catalogue(namespace)
+            logger.info('笔记目录获取完成')
+            # 获取笔记内容
+            for i in self.repo_catalogue:
+                if i['slug']:
+                    self.get_repo_content(namespace, i['slug'])
+            logger.info('笔记内容获取完成')
+            # 遍历数据库对比接口，删除失效的文档
+            content_id_list = []
+            for j in self.repo_content:
+                content_id_list.append(j['id'])
+            for k in Section.objects.filter(note_id=note_id):
+                if k.id not in content_id_list:
+                    Section.objects.get(id=k.id).delete()
+            logger.info('过期笔记清理完成')
+            # 笔记内容入库
+            for item in self.repo_content:
+                # logger.error(item)
+                item['note_id'] = note_id
+                item['created_time'] = item['created_at']
+                item['modified_time'] = item['content_updated_at']
+                del item['created_at'], item['content_updated_at']
+                # logger.error(item)
+                content = {
+                    "id": item['id'],
+                }
+                Section.objects.update_or_create(defaults=item, **content)
+            logger.info('笔记入库完成')
+            # 笔记目录入库
+            catalogue = dict()
+            catalogue['catalogue'] = self.repo_catalogue
+            catalogue['note_id'] = note_id
+            content = {
+                "note_id": catalogue['note_id'],
+            }
+            Catalogue.objects.update_or_create(defaults=catalogue, **content)
+            logger.info('目录入库完成')
+            # 更新笔记信息
+            note = Note.objects.get(id=note_id)
+            note.updated_time = timezone.now()
+            note.items_count = Section.objects.filter(note=note_id).count()
+            note.save()
+            logger.info('笔记信息更新完成')
+            return True
+        except Exception as e:
+            logger.error(e)
+            return False
