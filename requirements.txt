@@ -24,7 +24,7 @@ django-filter==25.1
 django-mdeditor==0.1.20
 django-redis==5.4.0
 django-redis-cache==3.0.1
-django-simpleui==2025.5.262
+django-simpleui==2025.6.24
 djangorestframework==3.16.0
 djangorestframework-recursive==0.1.2
 djangorestframework-simplejwt==5.3.1

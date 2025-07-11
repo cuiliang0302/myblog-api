@@ -52,6 +52,7 @@ class SectionAdmin(admin.ModelAdmin):
         'id', 'slug', 'note', 'title', 'view', 'like', 'comment', 'collect', 'created_time', 'modified_time')
     list_display_links = ('id', 'title', 'note')
     search_fields = ('title', 'id')
+    list_filter = ['note']
 
 
 # 笔记目录
