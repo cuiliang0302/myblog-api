@@ -326,6 +326,7 @@ class SyncNoteListAPIView(APIView):
         try:
             yuque.get_repo_list()
             repo_list = yuque.repo_list
+            logger.error(repo_list)
             for item in repo_list:
                 content = {
                     "id": item['id'],

@@ -100,7 +100,7 @@ class Section(models.Model):
 
 
 class Catalogue(models.Model):
-    note = models.ForeignKey(Note, on_delete=models.DO_NOTHING, verbose_name='笔记名称')
+    note = models.ForeignKey(Note, on_delete=models.CASCADE, verbose_name='笔记名称')
     catalogue = models.JSONField('目录')
 
     class Meta:
