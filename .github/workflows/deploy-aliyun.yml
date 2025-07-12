@@ -66,8 +66,7 @@ jobs:
             echo "======CMD======"
             echo "SHORT_TAG = $SHORT_TAG"
             echo "Deploying image: $IMAGE_REF"
-
-            docker login -u ${{ env.ALIYUN_ACR_USERNAME }} -p '${{ secrets.ALIYUN_ACR_PASSWORD }}' ${{ env.ALIYUN_ACR_REGISTRY }}
+            echo "${{ secrets.ALIYUN_ACR_PASSWORD }}" | docker login -u ${{ env.ALIYUN_ACR_USERNAME }} --password-stdin ${{ env.ALIYUN_ACR_REGISTRY }}
             docker pull $IMAGE_REF
             docker stop ${{ env.APP_NAME }} || true
             docker rm ${{ env.APP_NAME }} || true
