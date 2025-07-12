@@ -1,0 +1,89 @@
+name: Build and Deploy to Aliyun for Docker
+
+env:
+  ALIYUN_ACR_REGISTRY: registry.cn-hangzhou.aliyuncs.com
+  ALIYUN_ACR_NAMESPACE: cuiliang_myblog
+  ALIYUN_IMAGE_NAME: myblog_api
+  ALIYUN_ACR_USERNAME: 1554382111@qq.com
+  APP_NAME: myblog_api
+  APP_PORT: 8010
+  ECS_HOST: 47.116.173.70
+  ECS_USER: root
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_digest: ${{ steps.build-image.outputs.digest }}
+      short_tag: ${{ steps.set-tag.outputs.short_tag }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate short tag
+        id: set-tag
+        run: echo "short_tag=$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Login to Aliyun Docker Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.ALIYUN_ACR_REGISTRY }}
+          username: ${{ env.ALIYUN_ACR_USERNAME }}
+          password: ${{ secrets.ALIYUN_ACR_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          load: false
+          provenance: false
+          tags: ${{ env.ALIYUN_ACR_REGISTRY }}/${{ env.ALIYUN_ACR_NAMESPACE }}/${{ env.ALIYUN_IMAGE_NAME }}:${{ steps.set-tag.outputs.short_tag }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to ECS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ env.ECS_HOST }}
+          username: ${{ env.ECS_USER }}
+          password: ${{ secrets.ECS_PASSWORD }}
+          script: |
+            IMAGE_DIGEST="${{ needs.build-and-push.outputs.image_digest }}"
+            SHORT_TAG="${{ needs.build-and-push.outputs.short_tag }}"
+
+            if [ -z "$IMAGE_DIGEST" ]; then
+              echo "⚠️ IMAGE_DIGEST is empty, falling back to tag"
+              IMAGE_REF="${{ env.ALIYUN_ACR_REGISTRY }}/${{ env.ALIYUN_ACR_NAMESPACE }}/${{ env.ALIYUN_IMAGE_NAME }}:${SHORT_TAG}"
+            else
+              IMAGE_REF="${{ env.ALIYUN_ACR_REGISTRY }}/${{ env.ALIYUN_ACR_NAMESPACE }}/${{ env.ALIYUN_IMAGE_NAME }}@${IMAGE_DIGEST}"
+            fi
+
+            echo "======CMD======"
+            echo "Deploying image: $IMAGE_REF"
+
+            docker login -u ${{ env.ALIYUN_ACR_USERNAME }} -p '${{ secrets.ALIYUN_ACR_PASSWORD }}' ${{ env.ALIYUN_ACR_REGISTRY }}
+            docker pull $IMAGE_REF
+            docker stop ${{ env.APP_NAME }} || true
+            docker rm ${{ env.APP_NAME }} || true
+            docker run -d --name ${{ env.APP_NAME }} \
+              -p ${{ env.APP_PORT }}:8000 \
+              --restart always \
+              --link redis \
+              -v /opt/myblog_api/envs:/opt/DRF/envs \
+              $IMAGE_REF
+
+            echo "======END======"
