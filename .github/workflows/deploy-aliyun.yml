@@ -66,7 +66,7 @@ jobs:
             SHORT_TAG="${{ needs.build-and-push.outputs.short_tag }}"
 
             if [ -z "$IMAGE_DIGEST" ]; then
-              echo "⚠️ IMAGE_DIGEST is empty, falling back to tag"
+              echo "IMAGE_DIGEST is empty, falling back to tag"
               IMAGE_REF="${{ env.ALIYUN_ACR_REGISTRY }}/${{ env.ALIYUN_ACR_NAMESPACE }}/${{ env.ALIYUN_IMAGE_NAME }}:${SHORT_TAG}"
             else
               IMAGE_REF="${{ env.ALIYUN_ACR_REGISTRY }}/${{ env.ALIYUN_ACR_NAMESPACE }}/${{ env.ALIYUN_IMAGE_NAME }}@${IMAGE_DIGEST}"
