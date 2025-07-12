@@ -19,7 +19,6 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     outputs:
-      image_digest: ${{ steps.build-image.outputs.digest }}
       short_tag: ${{ steps.set-tag.outputs.short_tag }}
 
     steps:
@@ -62,17 +61,10 @@ jobs:
           username: ${{ env.ECS_USER }}
           password: ${{ secrets.ECS_PASSWORD }}
           script: |
-            IMAGE_DIGEST="${{ needs.build-and-push.outputs.image_digest }}"
             SHORT_TAG="${{ needs.build-and-push.outputs.short_tag }}"
-
-            if [ -z "$IMAGE_DIGEST" ]; then
-              echo "IMAGE_DIGEST is empty, falling back to tag"
-              IMAGE_REF="${{ env.ALIYUN_ACR_REGISTRY }}/${{ env.ALIYUN_ACR_NAMESPACE }}/${{ env.ALIYUN_IMAGE_NAME }}:${SHORT_TAG}"
-            else
-              IMAGE_REF="${{ env.ALIYUN_ACR_REGISTRY }}/${{ env.ALIYUN_ACR_NAMESPACE }}/${{ env.ALIYUN_IMAGE_NAME }}@${IMAGE_DIGEST}"
-            fi
-
+            IMAGE_REF="${{ env.ALIYUN_ACR_REGISTRY }}/${{ env.ALIYUN_ACR_NAMESPACE }}/${{ env.ALIYUN_IMAGE_NAME }}:${SHORT_TAG}"
             echo "======CMD======"
+            echo "SHORT_TAG = $SHORT_TAG"
             echo "Deploying image: $IMAGE_REF"
 
             docker login -u ${{ env.ALIYUN_ACR_USERNAME }} -p '${{ secrets.ALIYUN_ACR_PASSWORD }}' ${{ env.ALIYUN_ACR_REGISTRY }}
