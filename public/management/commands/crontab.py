@@ -92,7 +92,7 @@ def async_note_job():
     """
     logger.info('同步笔记内容任务开始执行')
     note = Note.objects.order_by('updated_time')[0]
-    # logger.error(note)
+    logger.info(f"同步笔记{note.name}")
     yuque = Yuque(settings.YUQUE_TOKEN)
     if yuque.async_note(note.id):
         logger.info("笔记定时同步任务执行成功")
