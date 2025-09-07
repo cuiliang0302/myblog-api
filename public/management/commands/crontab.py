@@ -114,7 +114,7 @@ class Command(BaseCommand):
 
         scheduler.add_job(
             sitemap_job,
-            trigger=CronTrigger(hour="06", minute="00"),
+            trigger=CronTrigger(hour="07", minute="00"),
             id="sitemap_job",  # The `id` assigned to each job MUST be unique
             max_instances=5,
             replace_existing=True,
@@ -135,7 +135,7 @@ class Command(BaseCommand):
 
         scheduler.add_job(
             async_note_job,
-            trigger=CronTrigger(hour="1-5", minute="00"),
+            trigger=CronTrigger(hour="2-6", minute="00"),
             # trigger=CronTrigger(second='*/10'),  # Every 10 seconds
             id="async_note_job",  # The `id` assigned to each job MUST be unique
             max_instances=5,
