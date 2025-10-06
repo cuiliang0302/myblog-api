@@ -10,6 +10,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_extensions.cache.decorators import cache_response
+from rest_framework_extensions.key_constructor.bits import QueryParamsKeyBit
+from rest_framework_extensions.key_constructor.constructors import DefaultKeyConstructor
+
 from account.models import UserInfo
 from blog.models import Article, Section, Category, Note
 from blog.serializers import ArticleListSerializer, SectionSerializer
@@ -453,12 +456,19 @@ class UserEchartsAPIView(APIView):
             return Response({'msg': '请求参数错误'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class CustomKeyConstructor(DefaultKeyConstructor):
+    """
+    配置缓存装饰器包含查询参数
+    """
+    query_params = QueryParamsKeyBit()
+
+
 class userRecordAPIView(APIView):
     """
     用户echarts数据接口
     """
 
-    @cache_response()
+    @cache_response(key_func=CustomKeyConstructor())
     def get(self, request):
         kind = request.query_params.get('kind')
         result = []
@@ -488,5 +498,5 @@ class userRecordAPIView(APIView):
                 result.append({'username': user.username, 'photo': user.photo,
                                'article_count': user.article_comment_count,
                                'section_count': user.section_comment_count,
-                              'total_comment': user.total_comments})
+                               'total_comment': user.total_comments})
         return Response(result, status=status.HTTP_200_OK)
