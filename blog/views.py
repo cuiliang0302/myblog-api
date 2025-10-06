@@ -8,10 +8,11 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_extensions.cache.decorators import cache_response
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from django.conf import settings
 from public.tools import Yuque
-from public.utils import MyPageNumber
+from public.utils import MyPageNumber, ParamsKeyConstructor
 from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
@@ -120,8 +121,8 @@ class CatalogueAPIView(APIView):
     """
     permission_classes = (AdminAllOrGuestGet,)
 
-    @staticmethod
-    def get(request, note_id):
+    @cache_response(key_func=ParamsKeyConstructor())
+    def get(self,request, note_id):
         """
         获取指定ID笔记的目录结构
         """
@@ -243,8 +244,8 @@ class ClassifyAPIView(APIView):
     博客文章归档
     """
 
-    @staticmethod
-    def get(request):
+    @cache_response(key_func=ParamsKeyConstructor())
+    def get(self, request):
         query_month = request.query_params.get('month')
         # logger.error(query_month)
         if query_month and query_month:

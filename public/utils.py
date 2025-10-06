@@ -1,7 +1,10 @@
 from loguru import logger
 from rest_framework.pagination import PageNumberPagination
+from rest_framework_extensions.key_constructor.bits import QueryParamsKeyBit
+from rest_framework_extensions.key_constructor.constructors import DefaultKeyConstructor
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import AuthenticationFailed
+
 
 class MyPageNumber(PageNumberPagination):
     """
@@ -11,6 +14,13 @@ class MyPageNumber(PageNumberPagination):
     page_size_query_param = 'size'  # URL中每页显示条数的参数
     page_query_param = 'page'  # URL中页码的参数
     max_page_size = None  # 最大页码数限制
+
+
+class ParamsKeyConstructor(DefaultKeyConstructor):
+    """
+    自定义缓存策略，根据params参数缓存
+    """
+    query_params = QueryParamsKeyBit()
 
 
 def get_user_id_from_token(request):

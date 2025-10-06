@@ -13,6 +13,7 @@ from datetime import datetime
 from django.conf import settings
 from public.tools import Umami, Aliyun, Tencent
 from public.permissions import AdminAllOrGuestGetPost
+from public.utils import ParamsKeyConstructor
 
 
 class CarouselModelViewSet(CacheResponseMixin, viewsets.ModelViewSet):
@@ -61,7 +62,7 @@ class SiteStatisticsAPIView(APIView):
     网站数据统计
     """
 
-    @cache_response(timeout=300)
+    @cache_response(key_func=ParamsKeyConstructor(), timeout=300)
     def get(self, request):
         # 数据统计
         data_count = dict()
@@ -73,7 +74,7 @@ class SiteStatisticsAPIView(APIView):
         # 流量统计
         api = Umami()
         # logger.info(api.get_active())
-        data_count['active'] = api.get_active()+1
+        data_count['active'] = api.get_active() + 1
         count = api.get_stats()
         data_count['pv'] = count['pv']
         data_count['uv'] = count['uv']
@@ -90,33 +91,6 @@ class SiteStatisticsAPIView(APIView):
         # 标签数
         data_count['tag'] = Tag.objects.count()
         return Response(data_count, status=status.HTTP_200_OK)
-
-
-class SiteCountAPIView(APIView):
-    """
-    网站数据统计
-    """
-    permission_classes = (IsAdminUser,)
-
-    @cache_response()
-    def get(self, request):
-        # api = Baidu()
-        # count = api.count_today()
-        # today = count[0]
-        # compare = count[2]
-        # result = {
-        #     'today_pv': today[1],
-        #     'today_uv': today[2],
-        #     'today_time': today[3],
-        #     'today_page': today[4],
-        #     'today_new_user': today[5],
-        #     'compare_pv': compare[1],
-        #     'compare_uv': compare[2],
-        #     'compare_time': compare[3],
-        #     'compare_page': compare[4],
-        #     'compare_new_user': compare[5],
-        # }
-        return Response({}, status=status.HTTP_200_OK)
 
 
 class ServerMonitoringAPIView(APIView):

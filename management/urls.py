@@ -6,8 +6,6 @@ app_name = "management"
 urlpatterns = [
     path('siteStatistics/', views.SiteStatisticsAPIView.as_view()),
     # 网站访问数据总统计
-    path('siteCount/', views.SiteCountAPIView.as_view()),
-    # 网站数据量对比统计
     path('serverMonitoring/', views.ServerMonitoringAPIView.as_view()),
     # 服务器监控信息
     path('serverInfo/', views.ServerInfoAPIView.as_view()),

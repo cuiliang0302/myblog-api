@@ -18,7 +18,7 @@ from blog.models import Article, Section, Category, Note
 from blog.serializers import ArticleListSerializer, SectionSerializer
 from account.models import SearchKey
 from public.permissions import AuthenticatedAllOrGuestGetPat, AdminAllOrGuestGetPutPost
-from public.utils import MyPageNumber, get_user_id_from_token
+from public.utils import MyPageNumber, get_user_id_from_token, ParamsKeyConstructor
 from record.models import LeaveMessage, ArticleComment, SectionComment, ArticleHistory, SectionHistory
 from record.serializers import SearchKeySerializer, ArticleCommentSerializer, SectionCommentSerializer, \
     ArticleHistorySerializer, SectionHistorySerializer, LeaveMessageListSerializer, LeaveMessageInfoSerializer
@@ -456,19 +456,12 @@ class UserEchartsAPIView(APIView):
             return Response({'msg': '请求参数错误'}, status=status.HTTP_400_BAD_REQUEST)
 
 
-class CustomKeyConstructor(DefaultKeyConstructor):
-    """
-    配置缓存装饰器包含查询参数
-    """
-    query_params = QueryParamsKeyBit()
-
-
 class userRecordAPIView(APIView):
     """
     用户echarts数据接口
     """
 
-    @cache_response(key_func=CustomKeyConstructor())
+    @cache_response(key_func=ParamsKeyConstructor())
     def get(self, request):
         kind = request.query_params.get('kind')
         result = []
