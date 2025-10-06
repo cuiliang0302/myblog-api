@@ -451,3 +451,42 @@ class UserEchartsAPIView(APIView):
                 return Response(result, status=status.HTTP_200_OK)
         else:
             return Response({'msg': '请求参数错误'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class userRecordAPIView(APIView):
+    """
+    用户echarts数据接口
+    """
+
+    @cache_response()
+    def get(self, request):
+        kind = request.query_params.get('kind')
+        result = []
+        if kind == "access":
+            top_users = UserInfo.objects.annotate(
+                article_count=Count('articlehistory', distinct=True),
+                section_count=Count('sectionhistory', distinct=True),
+                total_views=Count('articlehistory', distinct=True) + Count('sectionhistory', distinct=True)
+            ).order_by('-total_views')[:11]
+            for user in top_users:
+                if user.username == 'admin':
+                    continue
+                result.append({'username': user.username, 'photo': user.photo,
+                               'article_count': user.article_count, 'section_count': user.section_count,
+                               'total_views': user.total_views})
+        else:
+            top_commenters = UserInfo.objects.annotate(
+                article_comment_count=Count('articlecomment', distinct=True),
+                section_comment_count=Count('sectioncomment', distinct=True),
+                total_comments=Count('articlecomment', distinct=True) + Count('sectioncomment', distinct=True)
+            ).filter(total_comments__gt=0).order_by('-total_comments')[:11]
+
+            # 使用结果
+            for user in top_commenters:
+                if user.username == 'admin':
+                    continue
+                result.append({'username': user.username, 'photo': user.photo,
+                               'article_count': user.article_comment_count,
+                               'section_count': user.section_comment_count,
+                              'total_comment': user.total_comments})
+        return Response(result, status=status.HTTP_200_OK)

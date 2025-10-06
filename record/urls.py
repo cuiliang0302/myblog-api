@@ -18,6 +18,8 @@ urlpatterns = [
     # 数据统计
     path('userEcharts/', views.UserEchartsAPIView.as_view()),
     # 用户echarts数据接口
+    path('userRecord/', views.userRecordAPIView.as_view())
+    # 用户行为记录统计
 ]
 router = routers.DefaultRouter()
 router.register('leaveMessage', views.LeaveMessageModelViewSet, 'leaveMessage')
