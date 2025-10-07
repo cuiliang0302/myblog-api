@@ -12,7 +12,7 @@ from rest_framework_extensions.cache.decorators import cache_response
 from rest_framework_extensions.cache.mixins import CacheResponseMixin
 from django.conf import settings
 from public.tools import Yuque
-from public.utils import MyPageNumber, ParamsKeyConstructor
+from public.utils import MyPageNumber, CustomKeyConstructor
 from blog.models import Article, Category, Note, Catalogue, Section, Tag
 from blog.serializers import CategorySerializer, NoteSerializer, SectionSerializer, TagSerializer, \
     ArticleListSerializer, ArticleRetrieveSerializer, CatalogueSerializer
@@ -121,7 +121,7 @@ class CatalogueAPIView(APIView):
     """
     permission_classes = (AdminAllOrGuestGet,)
 
-    @cache_response(key_func=ParamsKeyConstructor())
+    @cache_response(key_func=CustomKeyConstructor())
     def get(self,request, note_id):
         """
         获取指定ID笔记的目录结构
@@ -244,7 +244,7 @@ class ClassifyAPIView(APIView):
     博客文章归档
     """
 
-    @cache_response(key_func=ParamsKeyConstructor())
+    @cache_response(key_func=CustomKeyConstructor())
     def get(self, request):
         query_month = request.query_params.get('month')
         # logger.error(query_month)

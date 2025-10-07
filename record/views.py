@@ -18,7 +18,7 @@ from blog.models import Article, Section, Category, Note
 from blog.serializers import ArticleListSerializer, SectionSerializer
 from account.models import SearchKey
 from public.permissions import AuthenticatedAllOrGuestGetPat, AdminAllOrGuestGetPutPost
-from public.utils import MyPageNumber, get_user_id_from_token, ParamsKeyConstructor
+from public.utils import MyPageNumber, get_user_id_from_token, CustomKeyConstructor
 from record.models import LeaveMessage, ArticleComment, SectionComment, ArticleHistory, SectionHistory
 from record.serializers import SearchKeySerializer, ArticleCommentSerializer, SectionCommentSerializer, \
     ArticleHistorySerializer, SectionHistorySerializer, LeaveMessageListSerializer, LeaveMessageInfoSerializer
@@ -461,7 +461,7 @@ class userRecordAPIView(APIView):
     用户echarts数据接口
     """
 
-    @cache_response(key_func=ParamsKeyConstructor())
+    @cache_response(key_func=CustomKeyConstructor())
     def get(self, request):
         kind = request.query_params.get('kind')
         result = []

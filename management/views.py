@@ -13,7 +13,7 @@ from datetime import datetime
 from django.conf import settings
 from public.tools import Umami, Aliyun, Tencent
 from public.permissions import AdminAllOrGuestGetPost
-from public.utils import ParamsKeyConstructor
+from public.utils import CustomKeyConstructor
 
 
 class CarouselModelViewSet(CacheResponseMixin, viewsets.ModelViewSet):
@@ -62,7 +62,7 @@ class SiteStatisticsAPIView(APIView):
     网站数据统计
     """
 
-    @cache_response(key_func=ParamsKeyConstructor(), timeout=300)
+    @cache_response(key_func=CustomKeyConstructor(), timeout=300)
     def get(self, request):
         # 数据统计
         data_count = dict()
