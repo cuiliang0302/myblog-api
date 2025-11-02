@@ -19,7 +19,7 @@ from public.filter import DemoUserFilter
 from public.models import DemoUser, DemoProvince
 from public.permissions import AdminAllOrGuestGetPost
 from public.serializers import DemoUserSerializer, DemoProvinceSerializer
-from public.tools import Tencent
+# from public.tools import Tencent
 from loguru import logger
 from rest_framework.filters import OrderingFilter
 from public.utils import MyPageNumber
@@ -94,23 +94,23 @@ class BackgroundImageAPIView(APIView):
         return Response({'url': img_url}, status=status.HTTP_200_OK)
 
 
-class CdnRefreshAPIView(APIView):
-    """
-    CDN数据刷新接口
-    """
-    permission_classes = (AdminAllOrGuestGetPost,)
-
-    @staticmethod
-    def post(request):
-        url = request.data.get('url')
-        tencent_api = Tencent(settings.CLOUD['CDN']['TENCENT']['KEY'], settings.CLOUD['CDN']['TENCENT']['SECRET'])
-        result = tencent_api.cdn_refresh(url)
-        if result:
-            logger.info("操作url:{} 刷新成功！".format(url))
-            return Response({'msg': 'cdn刷新成功！'}, status=status.HTTP_200_OK)
-        else:
-            logger.info("操作url:{} 刷新失败！".format(url))
-            return Response({'msg': 'cdn刷新失败！'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# class CdnRefreshAPIView(APIView):
+#     """
+#     CDN数据刷新接口
+#     """
+#     permission_classes = (AdminAllOrGuestGetPost,)
+#
+#     @staticmethod
+#     def post(request):
+#         url = request.data.get('url')
+#         tencent_api = Tencent(settings.CLOUD['CDN']['TENCENT']['KEY'], settings.CLOUD['CDN']['TENCENT']['SECRET'])
+#         result = tencent_api.cdn_refresh(url)
+#         if result:
+#             logger.info("操作url:{} 刷新成功！".format(url))
+#             return Response({'msg': 'cdn刷新成功！'}, status=status.HTTP_200_OK)
+#         else:
+#             logger.info("操作url:{} 刷新失败！".format(url))
+#             return Response({'msg': 'cdn刷新失败！'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 

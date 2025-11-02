@@ -10,7 +10,7 @@ urlpatterns = [
     # 图片防盗链代理
     path('backgroundImage/', views.BackgroundImageAPIView.as_view()),
     # 获取图片地址
-    path('cdnRefresh/', views.CdnRefreshAPIView.as_view()),
+    # path('cdnRefresh/', views.CdnRefreshAPIView.as_view()),
     # CDN接口刷新接口
 ]
 router = routers.DefaultRouter()

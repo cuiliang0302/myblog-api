@@ -7,7 +7,7 @@ import uuid
 from statistics import mean
 from urllib.parse import urlencode
 import httpx as httpx
-from aliyunsdkcore.auth.credentials import AccessKeyCredential
+# from aliyunsdkcore.auth.credentials import AccessKeyCredential
 from loguru import logger
 import requests
 from alipay.aop.api.request.AlipaySystemOauthTokenRequest import AlipaySystemOauthTokenRequest
@@ -22,17 +22,17 @@ from django.utils import timezone
 from account.models import UserInfo, UserSource, OAuthId
 from rest_framework_simplejwt.tokens import RefreshToken
 import json
-from tencentcloud.common import credential
-from tencentcloud.common.profile.client_profile import ClientProfile
-from tencentcloud.common.profile.http_profile import HttpProfile
-from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
-from tencentcloud.cdn.v20180606 import cdn_client, models as cdn_models
-from tencentcloud.cvm.v20170312 import cvm_client, models as cvm_models
-from tencentcloud.monitor.v20180724 import monitor_client, models as monitor_models
-from aliyunsdkcore.client import AcsClient
-from aliyunsdkcms.request.v20190101.DescribeMetricListRequest import DescribeMetricListRequest
-from aliyunsdkecs.request.v20140526.DescribeInstancesRequest import DescribeInstancesRequest
-from aliyunsdkecs.request.v20140526.DescribeDisksRequest import DescribeDisksRequest
+# from tencentcloud.common import credential
+# from tencentcloud.common.profile.client_profile import ClientProfile
+# from tencentcloud.common.profile.http_profile import HttpProfile
+# from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
+# from tencentcloud.cdn.v20180606 import cdn_client, models as cdn_models
+# from tencentcloud.cvm.v20170312 import cvm_client, models as cvm_models
+# from tencentcloud.monitor.v20180724 import monitor_client, models as monitor_models
+# from aliyunsdkcore.client import AcsClient
+# from aliyunsdkcms.request.v20190101.DescribeMetricListRequest import DescribeMetricListRequest
+# from aliyunsdkecs.request.v20140526.DescribeInstancesRequest import DescribeInstancesRequest
+# from aliyunsdkecs.request.v20140526.DescribeDisksRequest import DescribeDisksRequest
 from alipay.aop.api.AlipayClientConfig import AlipayClientConfig
 from alipay.aop.api.DefaultAlipayClient import DefaultAlipayClient
 import traceback
@@ -120,202 +120,202 @@ class AuthCode:
         return msg.send()
 
 
-class Baidu:
-    """
-    # 百度统计api
-    """
-
-    def __init__(self):
-        self.url = 'https://api.baidu.com/json/tongji/v1/ReportService/getData'
-        self.username = settings.BAIDU_USERNAME
-        self.password = settings.BAIDU_PASSWORD
-        self.token = settings.BAIDU_TOKEN
-        self.id = settings.BAIDU_ID
-
-    # 获取所有流量统计
-    def count_all(self):
-        end_date = (timezone.now()).strftime('%Y%m%d')
-        data = {
-            "header": {
-                "username": self.username,
-                "password": self.password,
-                "token": self.token,
-                "account_type": 1
-            },
-            "body": {
-                "site_id": self.id,
-                "start_date": settings.BAIDU_START_DATE,
-                "end_date": end_date,
-                "metrics": "pv_count,visitor_count,ip_count",
-                "method": "trend/time/a",
-                "area": ""
-            }
-        }
-        try:
-            r = requests.post(self.url, data=json.dumps(data))
-            result = json.loads(r.text)
-            pv = result["body"]["data"][0]["result"]["pageSum"][0][0]
-            uv = result["body"]["data"][0]["result"]["pageSum"][0][1]
-            ip = result["body"]["data"][0]["result"]["pageSum"][0][2]
-            count_dict = dict()
-            count_dict['pv'] = pv
-            count_dict['uv'] = uv
-            count_dict['ip'] = ip
-        except Exception as e:
-            print(e)
-            count_dict = dict()
-            count_dict['pv'] = 8024
-            count_dict['uv'] = 3025
-            count_dict['ip'] = 2896
-        return count_dict
-
-    # 获取当天流量统计和昨天对比
-    def count_today(self):
-        today = datetime.now().strftime("%Y%m%d")
-        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
-        data = {
-            "header": {
-                "username": self.username,
-                "password": self.password,
-                "token": self.token,
-                "account_type": 1
-            },
-            "body": {
-                "site_id": self.id,
-                "start_date": today,
-                "end_date": today,
-                "metrics": "pv_count,visitor_count,avg_visit_time,avg_visit_pages,new_visitor_count",
-                "method": "trend/time/a",
-                "start_date2": yesterday,
-                "end_date2": yesterday,
-                "area": ""
-            }
-        }
-        r = requests.post(self.url, data=json.dumps(data))
-        # print(r.text)
-        result = json.loads(r.text)["body"]["data"][0]["result"]["pageSum"]
-        return result
-
-    # 近7天流量趋势
-    def count_trend(self):
-        today = datetime.now().strftime("%Y%m%d")
-        week_ago = (datetime.now() - timedelta(days=6)).strftime("%Y%m%d")
-        data = {
-            "header": {
-                "username": self.username,
-                "password": self.password,
-                "token": self.token,
-                "account_type": 1
-            },
-            "body": {
-                "site_id": self.id,
-                "start_date": week_ago,
-                "end_date": today,
-                "metrics": "pv_count,visitor_count,new_visitor_count,ip_count,avg_visit_time,avg_visit_pages",
-                "method": "trend/time/a",
-                "gran": "day",
-                "area": ""
-            }
-        }
-        r = requests.post(self.url, data=json.dumps(data))
-        result = json.loads(r.text)["body"]["data"][0]["result"]
-        return result
-
-    # 受访页统计
-    def count_page(self):
-        today = datetime.now().strftime("%Y%m%d")
-        week_ago = (datetime.now() - timedelta(days=6)).strftime("%Y%m%d")
-        data = {
-            "header": {
-                "username": self.username,
-                "password": self.password,
-                "token": self.token,
-                "account_type": 1
-            },
-            "body": {
-                "site_id": self.id,
-                "start_date": week_ago,
-                "end_date": today,
-                "metrics": "pv_count,visitor_count,visit1_count,average_stay_time",
-                "method": "visit/toppage/a",
-                "max_results": "50"
-            }
-        }
-        r = requests.post(self.url, data=json.dumps(data))
-        result = json.loads(r.text)["body"]["data"][0]["result"]
-        return result
-
-    # 用户设备统计:
-    def count_device(self):
-        today = datetime.now().strftime("%Y%m%d")
-        week_ago = (datetime.now() - timedelta(days=6)).strftime("%Y%m%d")
-        data_pc = {
-            "header": {
-                "username": self.username,
-                "password": self.password,
-                "token": self.token,
-                "account_type": 1
-            },
-            "body": {
-                "site_id": self.id,
-                "start_date": week_ago,
-                "end_date": today,
-                "metrics": "pv_count",
-                "method": "trend/time/a",
-                "clientDevice": "pc",
-                "gran": "day",
-                "area": ""
-            }
-        }
-        r_pc = requests.post(self.url, data=json.dumps(data_pc))
-        result_pc = json.loads(r_pc.text)["body"]["data"][0]["result"]["pageSum"][0]
-        data_mobile = {
-            "header": {
-                "username": self.username,
-                "password": self.password,
-                "token": self.token,
-                "account_type": 1
-            },
-            "body": {
-                "site_id": self.id,
-                "start_date": week_ago,
-                "end_date": today,
-                "metrics": "pv_count",
-                "method": "trend/time/a",
-                "clientDevice": "mobile",
-                "gran": "day",
-                "area": ""
-            }
-        }
-        r_mobile = requests.post(self.url, data=json.dumps(data_mobile))
-        result_mobile = json.loads(r_mobile.text)["body"]["data"][0]["result"]["pageSum"][0]
-        data = dict()
-        data['pc'] = result_pc[-1]
-        data['mobile'] = result_mobile[-1]
-        return data
-
-    # 用户区域统计:
-    def count_map(self):
-        today = datetime.now().strftime("%Y%m%d")
-        week_ago = (datetime.now() - timedelta(days=6)).strftime("%Y%m%d")
-        data = {
-            "header": {
-                "username": self.username,
-                "password": self.password,
-                "token": self.token,
-                "account_type": 1
-            },
-            "body": {
-                "site_id": self.id,
-                "start_date": week_ago,
-                "end_date": today,
-                "metrics": "pv_count,pv_ratio",
-                "method": "visit/district/a",
-            }
-        }
-        r = requests.post(self.url, data=json.dumps(data))
-        result = json.loads(r.text)["body"]["data"][0]["result"]
-        return result
+# class Baidu:
+#     """
+#     # 百度统计api
+#     """
+#
+#     def __init__(self):
+#         self.url = 'https://api.baidu.com/json/tongji/v1/ReportService/getData'
+#         self.username = settings.BAIDU_USERNAME
+#         self.password = settings.BAIDU_PASSWORD
+#         self.token = settings.BAIDU_TOKEN
+#         self.id = settings.BAIDU_ID
+#
+#     # 获取所有流量统计
+#     def count_all(self):
+#         end_date = (timezone.now()).strftime('%Y%m%d')
+#         data = {
+#             "header": {
+#                 "username": self.username,
+#                 "password": self.password,
+#                 "token": self.token,
+#                 "account_type": 1
+#             },
+#             "body": {
+#                 "site_id": self.id,
+#                 "start_date": settings.BAIDU_START_DATE,
+#                 "end_date": end_date,
+#                 "metrics": "pv_count,visitor_count,ip_count",
+#                 "method": "trend/time/a",
+#                 "area": ""
+#             }
+#         }
+#         try:
+#             r = requests.post(self.url, data=json.dumps(data))
+#             result = json.loads(r.text)
+#             pv = result["body"]["data"][0]["result"]["pageSum"][0][0]
+#             uv = result["body"]["data"][0]["result"]["pageSum"][0][1]
+#             ip = result["body"]["data"][0]["result"]["pageSum"][0][2]
+#             count_dict = dict()
+#             count_dict['pv'] = pv
+#             count_dict['uv'] = uv
+#             count_dict['ip'] = ip
+#         except Exception as e:
+#             print(e)
+#             count_dict = dict()
+#             count_dict['pv'] = 8024
+#             count_dict['uv'] = 3025
+#             count_dict['ip'] = 2896
+#         return count_dict
+#
+#     # 获取当天流量统计和昨天对比
+#     def count_today(self):
+#         today = datetime.now().strftime("%Y%m%d")
+#         yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
+#         data = {
+#             "header": {
+#                 "username": self.username,
+#                 "password": self.password,
+#                 "token": self.token,
+#                 "account_type": 1
+#             },
+#             "body": {
+#                 "site_id": self.id,
+#                 "start_date": today,
+#                 "end_date": today,
+#                 "metrics": "pv_count,visitor_count,avg_visit_time,avg_visit_pages,new_visitor_count",
+#                 "method": "trend/time/a",
+#                 "start_date2": yesterday,
+#                 "end_date2": yesterday,
+#                 "area": ""
+#             }
+#         }
+#         r = requests.post(self.url, data=json.dumps(data))
+#         # print(r.text)
+#         result = json.loads(r.text)["body"]["data"][0]["result"]["pageSum"]
+#         return result
+#
+#     # 近7天流量趋势
+#     def count_trend(self):
+#         today = datetime.now().strftime("%Y%m%d")
+#         week_ago = (datetime.now() - timedelta(days=6)).strftime("%Y%m%d")
+#         data = {
+#             "header": {
+#                 "username": self.username,
+#                 "password": self.password,
+#                 "token": self.token,
+#                 "account_type": 1
+#             },
+#             "body": {
+#                 "site_id": self.id,
+#                 "start_date": week_ago,
+#                 "end_date": today,
+#                 "metrics": "pv_count,visitor_count,new_visitor_count,ip_count,avg_visit_time,avg_visit_pages",
+#                 "method": "trend/time/a",
+#                 "gran": "day",
+#                 "area": ""
+#             }
+#         }
+#         r = requests.post(self.url, data=json.dumps(data))
+#         result = json.loads(r.text)["body"]["data"][0]["result"]
+#         return result
+#
+#     # 受访页统计
+#     def count_page(self):
+#         today = datetime.now().strftime("%Y%m%d")
+#         week_ago = (datetime.now() - timedelta(days=6)).strftime("%Y%m%d")
+#         data = {
+#             "header": {
+#                 "username": self.username,
+#                 "password": self.password,
+#                 "token": self.token,
+#                 "account_type": 1
+#             },
+#             "body": {
+#                 "site_id": self.id,
+#                 "start_date": week_ago,
+#                 "end_date": today,
+#                 "metrics": "pv_count,visitor_count,visit1_count,average_stay_time",
+#                 "method": "visit/toppage/a",
+#                 "max_results": "50"
+#             }
+#         }
+#         r = requests.post(self.url, data=json.dumps(data))
+#         result = json.loads(r.text)["body"]["data"][0]["result"]
+#         return result
+#
+#     # 用户设备统计:
+#     def count_device(self):
+#         today = datetime.now().strftime("%Y%m%d")
+#         week_ago = (datetime.now() - timedelta(days=6)).strftime("%Y%m%d")
+#         data_pc = {
+#             "header": {
+#                 "username": self.username,
+#                 "password": self.password,
+#                 "token": self.token,
+#                 "account_type": 1
+#             },
+#             "body": {
+#                 "site_id": self.id,
+#                 "start_date": week_ago,
+#                 "end_date": today,
+#                 "metrics": "pv_count",
+#                 "method": "trend/time/a",
+#                 "clientDevice": "pc",
+#                 "gran": "day",
+#                 "area": ""
+#             }
+#         }
+#         r_pc = requests.post(self.url, data=json.dumps(data_pc))
+#         result_pc = json.loads(r_pc.text)["body"]["data"][0]["result"]["pageSum"][0]
+#         data_mobile = {
+#             "header": {
+#                 "username": self.username,
+#                 "password": self.password,
+#                 "token": self.token,
+#                 "account_type": 1
+#             },
+#             "body": {
+#                 "site_id": self.id,
+#                 "start_date": week_ago,
+#                 "end_date": today,
+#                 "metrics": "pv_count",
+#                 "method": "trend/time/a",
+#                 "clientDevice": "mobile",
+#                 "gran": "day",
+#                 "area": ""
+#             }
+#         }
+#         r_mobile = requests.post(self.url, data=json.dumps(data_mobile))
+#         result_mobile = json.loads(r_mobile.text)["body"]["data"][0]["result"]["pageSum"][0]
+#         data = dict()
+#         data['pc'] = result_pc[-1]
+#         data['mobile'] = result_mobile[-1]
+#         return data
+#
+#     # 用户区域统计:
+#     def count_map(self):
+#         today = datetime.now().strftime("%Y%m%d")
+#         week_ago = (datetime.now() - timedelta(days=6)).strftime("%Y%m%d")
+#         data = {
+#             "header": {
+#                 "username": self.username,
+#                 "password": self.password,
+#                 "token": self.token,
+#                 "account_type": 1
+#             },
+#             "body": {
+#                 "site_id": self.id,
+#                 "start_date": week_ago,
+#                 "end_date": today,
+#                 "metrics": "pv_count,pv_ratio",
+#                 "method": "visit/district/a",
+#             }
+#         }
+#         r = requests.post(self.url, data=json.dumps(data))
+#         result = json.loads(r.text)["body"]["data"][0]["result"]
+#         return result
 
 
 class Umami:
@@ -391,221 +391,221 @@ class Umami:
         return result
 
 
-class Aliyun:
-    """
-    阿里云sdk工具
-    """
+# class Aliyun:
+#     """
+#     阿里云sdk工具
+#     """
+#
+#     def __init__(self, secret_id, secret_key):
+#         self.secretId = secret_id
+#         self.secretKey = secret_key
+#         self.location = settings.CLOUD['ECS']['LOCATION']
+#         self.instanceId = settings.CLOUD['ECS']['INSTANCE']
+#
+#     def __ecs_metric(self, metric):
+#         """
+#         获取指标数据
+#         """
+#         startTime = (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
+#         try:
+#             client = AcsClient(self.secretId, self.secretKey, self.location)
+#             request = DescribeMetricListRequest()
+#             request.set_accept_format('json')
+#             request.set_StartTime(startTime)
+#             instance = "{\"instanceId\":\"" + self.instanceId + "\"}"
+#             request.set_Dimensions(instance)
+#             request.set_Period("60")
+#             request.set_Namespace("acs_ecs_dashboard")
+#             request.set_MetricName(metric)
+#             response = client.do_action_with_exception(request)
+#             result = str(response, encoding='utf-8')
+#             result_dict = json.loads(result)
+#             # print(result_dict)
+#             if result_dict['Code'] == '200':
+#                 data = eval(result_dict['Datapoints'][1:-1])
+#                 return round(data[0]["Average"], 2)
+#         except Exception as e:
+#             logger.error(e)
+#             value = 0.00
+#             return value
+#
+#     def ecs_info(self):
+#         """
+#         云主机配置信息
+#         """
+#
+#         result = dict()
+#         credentials = AccessKeyCredential(self.secretId, self.secretKey)
+#         client = AcsClient(region_id=self.location, credential=credentials)
+#         # 获取概述信息
+#         request = DescribeInstancesRequest()
+#         request.set_accept_format('json')
+#         request.set_InstanceIds("['" + self.instanceId + "']")
+#         response = json.loads(str(client.do_action_with_exception(request), encoding='utf-8'))
+#         result['cpu'] = response['Instances']['Instance'][0]['Cpu']
+#         result['memory'] = int(response['Instances']['Instance'][0]['Memory'] / 1024)
+#         result['os'] = response['Instances']['Instance'][0]['OSName']
+#         result['bandwidth'] = response['Instances']['Instance'][0]['InternetMaxBandwidthOut']
+#         # 获取磁盘信息
+#         request = DescribeDisksRequest()
+#         request.set_accept_format('json')
+#         request.set_InstanceId(self.instanceId)
+#         response = json.loads(str(client.do_action_with_exception(request), encoding='utf-8'))
+#         result['disk'] = response['Disks']['Disk'][0]['Size']
+#         return result
+#
+#     def ecs_monitoring(self):
+#         """
+#         云主机性能监控
+#         """
+#         metric_list = ['CPUUtilization', 'memory_usedutilization', 'diskusage_utilization', 'load_15m']
+#         result = dict()
+#         for i in metric_list:
+#             if i == 'CPUUtilization':
+#                 result['cpu_rate'] = self.__ecs_metric(i)
+#             elif i == 'memory_usedutilization':
+#                 result['memory_rate'] = self.__ecs_metric(i)
+#             elif i == 'diskusage_utilization':
+#                 result['disk_rate'] = self.__ecs_metric(i)
+#             else:
+#                 result['load_15'] = self.__ecs_metric(i)
+#         return result
+#
+#     def cdn_refresh(self, url):
+#         """
+#         cdn刷新
+#         """
+#         pass
 
-    def __init__(self, secret_id, secret_key):
-        self.secretId = secret_id
-        self.secretKey = secret_key
-        self.location = settings.CLOUD['ECS']['LOCATION']
-        self.instanceId = settings.CLOUD['ECS']['INSTANCE']
 
-    def __ecs_metric(self, metric):
-        """
-        获取指标数据
-        """
-        startTime = (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%d %H:%M:%S")
-        try:
-            client = AcsClient(self.secretId, self.secretKey, self.location)
-            request = DescribeMetricListRequest()
-            request.set_accept_format('json')
-            request.set_StartTime(startTime)
-            instance = "{\"instanceId\":\"" + self.instanceId + "\"}"
-            request.set_Dimensions(instance)
-            request.set_Period("60")
-            request.set_Namespace("acs_ecs_dashboard")
-            request.set_MetricName(metric)
-            response = client.do_action_with_exception(request)
-            result = str(response, encoding='utf-8')
-            result_dict = json.loads(result)
-            # print(result_dict)
-            if result_dict['Code'] == '200':
-                data = eval(result_dict['Datapoints'][1:-1])
-                return round(data[0]["Average"], 2)
-        except Exception as e:
-            logger.error(e)
-            value = 0.00
-            return value
-
-    def ecs_info(self):
-        """
-        云主机配置信息
-        """
-
-        result = dict()
-        credentials = AccessKeyCredential(self.secretId, self.secretKey)
-        client = AcsClient(region_id=self.location, credential=credentials)
-        # 获取概述信息
-        request = DescribeInstancesRequest()
-        request.set_accept_format('json')
-        request.set_InstanceIds("['" + self.instanceId + "']")
-        response = json.loads(str(client.do_action_with_exception(request), encoding='utf-8'))
-        result['cpu'] = response['Instances']['Instance'][0]['Cpu']
-        result['memory'] = int(response['Instances']['Instance'][0]['Memory'] / 1024)
-        result['os'] = response['Instances']['Instance'][0]['OSName']
-        result['bandwidth'] = response['Instances']['Instance'][0]['InternetMaxBandwidthOut']
-        # 获取磁盘信息
-        request = DescribeDisksRequest()
-        request.set_accept_format('json')
-        request.set_InstanceId(self.instanceId)
-        response = json.loads(str(client.do_action_with_exception(request), encoding='utf-8'))
-        result['disk'] = response['Disks']['Disk'][0]['Size']
-        return result
-
-    def ecs_monitoring(self):
-        """
-        云主机性能监控
-        """
-        metric_list = ['CPUUtilization', 'memory_usedutilization', 'diskusage_utilization', 'load_15m']
-        result = dict()
-        for i in metric_list:
-            if i == 'CPUUtilization':
-                result['cpu_rate'] = self.__ecs_metric(i)
-            elif i == 'memory_usedutilization':
-                result['memory_rate'] = self.__ecs_metric(i)
-            elif i == 'diskusage_utilization':
-                result['disk_rate'] = self.__ecs_metric(i)
-            else:
-                result['load_15'] = self.__ecs_metric(i)
-        return result
-
-    def cdn_refresh(self, url):
-        """
-        cdn刷新
-        """
-        pass
-
-
-class Tencent:
-    """
-    腾讯云sdk工具
-    """
-
-    def __init__(self, secret_id, secret_key):
-        self.secretId = secret_id
-        self.secretKey = secret_key
-        self.location = settings.CLOUD['ECS']['LOCATION']
-        self.instanceId = settings.CLOUD['ECS']['INSTANCE']
-
-    def ecs_info(self):
-        """
-        云主机配置信息
-        """
-
-        result = dict()
-        try:
-            cred = credential.Credential(self.secretId, self.secretKey)
-            httpProfile = HttpProfile()
-            httpProfile.endpoint = "cvm.tencentcloudapi.com"
-
-            clientProfile = ClientProfile()
-            clientProfile.httpProfile = httpProfile
-            client = cvm_client.CvmClient(cred, self.location, clientProfile)
-
-            req = cvm_models.DescribeInstancesRequest()
-            params = {
-                "InstanceIds": [self.instanceId]
-            }
-            req.from_json_string(json.dumps(params))
-            resp = json.loads(client.DescribeInstances(req).to_json_string())
-            result['cpu'] = resp['InstanceSet'][0]['CPU']
-            result['memory'] = resp['InstanceSet'][0]['Memory']
-            result['os'] = resp['InstanceSet'][0]['OsName']
-            result['bandwidth'] = resp['InstanceSet'][0]['InternetAccessible']['InternetMaxBandwidthOut']
-            result['disk'] = resp['InstanceSet'][0]['SystemDisk']['DiskSize']
-
-        except TencentCloudSDKException as err:
-            print(err)
-            result = None
-        return result
-
-    def __ecs_metric(self, metric):
-        """
-        获取指标数据
-        """
-        startTime = (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S+08:00")
-        endTime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+08:00")
-        try:
-            cred = credential.Credential(self.secretId, self.secretKey)
-            httpProfile = HttpProfile()
-            httpProfile.endpoint = "monitor.tencentcloudapi.com"
-
-            clientProfile = ClientProfile()
-            clientProfile.httpProfile = httpProfile
-            client = monitor_client.MonitorClient(cred, self.location, clientProfile)
-
-            req = monitor_models.GetMonitorDataRequest()
-            params = {
-                "Namespace": "QCE/CVM",
-                "MetricName": metric,
-                "Period": 300,
-                "StartTime": startTime,
-                "EndTime": endTime,
-                "Instances": [
-                    {
-                        "Dimensions": [
-                            {
-                                "Name": "InstanceId",
-                                "Value": self.instanceId
-                            }
-                        ]
-                    }
-                ]
-            }
-            req.from_json_string(json.dumps(params))
-            resp = json.loads(client.GetMonitorData(req).to_json_string())
-            return round(mean(resp['DataPoints'][0]['Values']), 2)
-        except Exception as e:
-            logger.error(e)
-            value = 0.00
-            return value
-
-    def ecs_monitoring(self):
-        """
-        云主机性能监控
-        """
-        metric_list = ['CPUUsage', 'MemUsage', 'CvmDiskUsage', 'Cpuloadavg15m']
-        result = dict()
-        for i in metric_list:
-            if i == 'CPUUsage':
-                result['cpu_rate'] = self.__ecs_metric(i)
-            elif i == 'MemUsage':
-                result['memory_rate'] = self.__ecs_metric(i)
-            elif i == 'CvmDiskUsage':
-                result['disk_rate'] = self.__ecs_metric(i)
-            else:
-                result['load_15'] = self.__ecs_metric(i)
-        return result
-
-    def cdn_refresh(self, url):
-        """
-        cdn刷新
-        """
-        try:
-            cred = credential.Credential(self.secretId, self.secretKey)
-            httpProfile = HttpProfile()
-            httpProfile.endpoint = "cdn.tencentcloudapi.com"
-
-            clientProfile = ClientProfile()
-            clientProfile.httpProfile = httpProfile
-            client = cdn_client.CdnClient(cred, "", clientProfile)
-
-            req = cdn_models.PurgeUrlsCacheRequest()
-            params = {
-                "Urls": [url]
-            }
-            req.from_json_string(json.dumps(params))
-
-            resp = client.PurgeUrlsCache(req)
-            logger.info(resp.to_json_string())
-            return True
-
-        except TencentCloudSDKException as err:
-            print(err)
-            logger.error(err)
-            return False
+# class Tencent:
+#     """
+#     腾讯云sdk工具
+#     """
+#
+#     def __init__(self, secret_id, secret_key):
+#         self.secretId = secret_id
+#         self.secretKey = secret_key
+#         self.location = settings.CLOUD['ECS']['LOCATION']
+#         self.instanceId = settings.CLOUD['ECS']['INSTANCE']
+#
+#     def ecs_info(self):
+#         """
+#         云主机配置信息
+#         """
+#
+#         result = dict()
+#         try:
+#             cred = credential.Credential(self.secretId, self.secretKey)
+#             httpProfile = HttpProfile()
+#             httpProfile.endpoint = "cvm.tencentcloudapi.com"
+#
+#             clientProfile = ClientProfile()
+#             clientProfile.httpProfile = httpProfile
+#             client = cvm_client.CvmClient(cred, self.location, clientProfile)
+#
+#             req = cvm_models.DescribeInstancesRequest()
+#             params = {
+#                 "InstanceIds": [self.instanceId]
+#             }
+#             req.from_json_string(json.dumps(params))
+#             resp = json.loads(client.DescribeInstances(req).to_json_string())
+#             result['cpu'] = resp['InstanceSet'][0]['CPU']
+#             result['memory'] = resp['InstanceSet'][0]['Memory']
+#             result['os'] = resp['InstanceSet'][0]['OsName']
+#             result['bandwidth'] = resp['InstanceSet'][0]['InternetAccessible']['InternetMaxBandwidthOut']
+#             result['disk'] = resp['InstanceSet'][0]['SystemDisk']['DiskSize']
+#
+#         except TencentCloudSDKException as err:
+#             print(err)
+#             result = None
+#         return result
+#
+#     def __ecs_metric(self, metric):
+#         """
+#         获取指标数据
+#         """
+#         startTime = (datetime.now() - timedelta(minutes=15)).strftime("%Y-%m-%dT%H:%M:%S+08:00")
+#         endTime = datetime.now().strftime("%Y-%m-%dT%H:%M:%S+08:00")
+#         try:
+#             cred = credential.Credential(self.secretId, self.secretKey)
+#             httpProfile = HttpProfile()
+#             httpProfile.endpoint = "monitor.tencentcloudapi.com"
+#
+#             clientProfile = ClientProfile()
+#             clientProfile.httpProfile = httpProfile
+#             client = monitor_client.MonitorClient(cred, self.location, clientProfile)
+#
+#             req = monitor_models.GetMonitorDataRequest()
+#             params = {
+#                 "Namespace": "QCE/CVM",
+#                 "MetricName": metric,
+#                 "Period": 300,
+#                 "StartTime": startTime,
+#                 "EndTime": endTime,
+#                 "Instances": [
+#                     {
+#                         "Dimensions": [
+#                             {
+#                                 "Name": "InstanceId",
+#                                 "Value": self.instanceId
+#                             }
+#                         ]
+#                     }
+#                 ]
+#             }
+#             req.from_json_string(json.dumps(params))
+#             resp = json.loads(client.GetMonitorData(req).to_json_string())
+#             return round(mean(resp['DataPoints'][0]['Values']), 2)
+#         except Exception as e:
+#             logger.error(e)
+#             value = 0.00
+#             return value
+#
+#     def ecs_monitoring(self):
+#         """
+#         云主机性能监控
+#         """
+#         metric_list = ['CPUUsage', 'MemUsage', 'CvmDiskUsage', 'Cpuloadavg15m']
+#         result = dict()
+#         for i in metric_list:
+#             if i == 'CPUUsage':
+#                 result['cpu_rate'] = self.__ecs_metric(i)
+#             elif i == 'MemUsage':
+#                 result['memory_rate'] = self.__ecs_metric(i)
+#             elif i == 'CvmDiskUsage':
+#                 result['disk_rate'] = self.__ecs_metric(i)
+#             else:
+#                 result['load_15'] = self.__ecs_metric(i)
+#         return result
+#
+#     def cdn_refresh(self, url):
+#         """
+#         cdn刷新
+#         """
+#         try:
+#             cred = credential.Credential(self.secretId, self.secretKey)
+#             httpProfile = HttpProfile()
+#             httpProfile.endpoint = "cdn.tencentcloudapi.com"
+#
+#             clientProfile = ClientProfile()
+#             clientProfile.httpProfile = httpProfile
+#             client = cdn_client.CdnClient(cred, "", clientProfile)
+#
+#             req = cdn_models.PurgeUrlsCacheRequest()
+#             params = {
+#                 "Urls": [url]
+#             }
+#             req.from_json_string(json.dumps(params))
+#
+#             resp = client.PurgeUrlsCache(req)
+#             logger.info(resp.to_json_string())
+#             return True
+#
+#         except TencentCloudSDKException as err:
+#             print(err)
+#             logger.error(err)
+#             return False
 
 
 class OAuth:

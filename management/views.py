@@ -11,7 +11,7 @@ from management.serializers import CarouselSerializer, AboutSerializer, LinkSeri
 from django.utils import timezone
 from datetime import datetime
 from django.conf import settings
-from public.tools import Umami, Aliyun, Tencent
+from public.tools import Umami
 from public.permissions import AdminAllOrGuestGetPost
 from public.utils import CustomKeyConstructor
 
@@ -93,44 +93,44 @@ class SiteStatisticsAPIView(APIView):
         return Response(data_count, status=status.HTTP_200_OK)
 
 
-class ServerMonitoringAPIView(APIView):
-    """
-    服务器监控信息
-    """
+# class ServerMonitoringAPIView(APIView):
+#     """
+#     服务器监控信息
+#     """
+#
+#     permission_classes = (IsAdminUser,)
+#
+#     @staticmethod
+#     def get(request):
+#         manufacturer = settings.ECS_MANUFACTURER
+#         if manufacturer == 'aliyun':
+#             aliyun = Aliyun(settings.CLOUD['ECS']['ALIYUN']['KEY'], settings.CLOUD['ECS']['ALIYUN']['SECRET'])
+#             metric = aliyun.ecs_monitoring()
+#             return Response(metric, status=status.HTTP_200_OK)
+#         else:
+#             tencent = Tencent(settings.CLOUD['ECS']['TENCENT']['KEY'], settings.CLOUD['ECS']['TENCENT']['SECRET'])
+#             metric = tencent.ecs_monitoring()
+#             return Response(metric, status=status.HTTP_200_OK)
 
-    permission_classes = (IsAdminUser,)
 
-    @staticmethod
-    def get(request):
-        manufacturer = settings.ECS_MANUFACTURER
-        if manufacturer == 'aliyun':
-            aliyun = Aliyun(settings.CLOUD['ECS']['ALIYUN']['KEY'], settings.CLOUD['ECS']['ALIYUN']['SECRET'])
-            metric = aliyun.ecs_monitoring()
-            return Response(metric, status=status.HTTP_200_OK)
-        else:
-            tencent = Tencent(settings.CLOUD['ECS']['TENCENT']['KEY'], settings.CLOUD['ECS']['TENCENT']['SECRET'])
-            metric = tencent.ecs_monitoring()
-            return Response(metric, status=status.HTTP_200_OK)
-
-
-class ServerInfoAPIView(APIView):
-    """
-    服务器规格信息
-    """
-
-    permission_classes = (IsAdminUser,)
-
-    @cache_response()
-    def get(self, request):
-        manufacturer = settings.ECS_MANUFACTURER
-        if manufacturer == 'aliyun':
-            aliyun = Aliyun(settings.CLOUD['ECS']['ALIYUN']['KEY'], settings.CLOUD['ECS']['ALIYUN']['SECRET'])
-            info = aliyun.ecs_info()
-            return Response(info, status=status.HTTP_200_OK)
-        else:
-            tencent = Tencent(settings.CLOUD['ECS']['TENCENT']['KEY'], settings.CLOUD['ECS']['TENCENT']['SECRET'])
-            info = tencent.ecs_info()
-            return Response(info, status=status.HTTP_200_OK)
+# class ServerInfoAPIView(APIView):
+#     """
+#     服务器规格信息
+#     """
+#
+#     permission_classes = (IsAdminUser,)
+#
+#     @cache_response()
+#     def get(self, request):
+#         manufacturer = settings.ECS_MANUFACTURER
+#         if manufacturer == 'aliyun':
+#             aliyun = Aliyun(settings.CLOUD['ECS']['ALIYUN']['KEY'], settings.CLOUD['ECS']['ALIYUN']['SECRET'])
+#             info = aliyun.ecs_info()
+#             return Response(info, status=status.HTTP_200_OK)
+#         else:
+#             tencent = Tencent(settings.CLOUD['ECS']['TENCENT']['KEY'], settings.CLOUD['ECS']['TENCENT']['SECRET'])
+#             info = tencent.ecs_info()
+#             return Response(info, status=status.HTTP_200_OK)
 
 
 class SiteEchartsAPIView(APIView):

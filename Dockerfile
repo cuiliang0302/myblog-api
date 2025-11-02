@@ -1,5 +1,5 @@
 # 项目base镜像文件
-FROM python:3.12
+FROM python:3.13
 USER root
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
     && echo 'Asia/Shanghai' >/etc/timezone
