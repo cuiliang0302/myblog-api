@@ -3,9 +3,9 @@ FROM python:3.13
 USER root
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
     && echo 'Asia/Shanghai' >/etc/timezone
-ADD . /opt/DRF/
-RUN pip install -r /opt/DRF/requirements.txt && pip install uwsgi
-WORKDIR /opt/DRF/
+ADD . /opt/app/
+RUN pip install -r /opt/app/requirements.txt && pip install uwsgi
+WORKDIR /opt/app/
 # 开发环境
 #EXPOSE 8000
 #CMD ["python","manage.py","runserver","0.0.0.0:8000"]

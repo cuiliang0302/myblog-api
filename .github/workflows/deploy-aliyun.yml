@@ -74,7 +74,7 @@ jobs:
               -p ${{ env.APP_PORT }}:8000 \
               --restart always \
               --link redis \
-              -v /opt/myblog_api/envs:/opt/DRF/envs \
+              -v /opt/myblog_api/envs:/opt/app/envs \
               $IMAGE_REF
 
             echo "======END======"
