@@ -6,8 +6,7 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && pip install --no-cache-dir uv
 COPY . /app
 WORKDIR /app
-RUN  uv pip install --system -r pyproject.toml \
-  && uv add gunicorn uvicorn
+RUN uv add gunicorn uvicorn && uv pip install --system -r pyproject.toml
 EXPOSE 8000
 # 开发环境
 #EXPOSE 8000
