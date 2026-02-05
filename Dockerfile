@@ -1,11 +1,14 @@
 # 项目base镜像文件
 FROM python:3.13
-USER root
-RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime  \
-    && echo 'Asia/Shanghai' >/etc/timezone
-ADD . /opt/app/
-RUN pip install -r /opt/app/requirements.txt && pip install uwsgi
-WORKDIR /opt/app/
+RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo 'Asia/Shanghai' >/etc/timezone  \
+    && pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/ \
+    && pip install --no-cache-dir uv
+COPY . /app
+WORKDIR /app
+RUN  uv pip install --system -r pyproject.toml \
+  && uv add gunicorn uvicorn
+EXPOSE 8000
 # 开发环境
 #EXPOSE 8000
 #CMD ["python","manage.py","runserver","0.0.0.0:8000"]

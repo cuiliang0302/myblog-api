@@ -7,7 +7,7 @@ env:
   ALIYUN_ACR_USERNAME: 1554382111@qq.com
   APP_NAME: myblog_api
   APP_PORT: 8010
-  ECS_HOST: 47.116.173.70
+  ECS_HOST: 139.224.37.91
   ECS_USER: root
 
 on:
