@@ -20,9 +20,9 @@ from public.permissions import AdminAllOrGuestGet
 from django.db.models.functions import TruncMonth
 
 
-class ArticleModelViewSet(viewsets.ModelViewSet):
+class ArticleModelViewSet(CacheResponseMixin, viewsets.ModelViewSet):
     """
-    博客文章增删改查
+    博客文章增删改查（list 按请求参数分别缓存：page、size、ordering、category、tags 等）
     """
     permission_classes = (AdminAllOrGuestGet,)
     queryset = Article.objects.all()
@@ -63,9 +63,9 @@ class TagModelViewSet(CacheResponseMixin, viewsets.ModelViewSet):
     serializer_class = TagSerializer
 
 
-class NoteModelViewSet(viewsets.ModelViewSet):
+class NoteModelViewSet(CacheResponseMixin, viewsets.ModelViewSet):
     """
-    笔记名称增删改查
+    笔记名称增删改查（list/retrieve 使用 Redis 缓存）
     """
     queryset = Note.objects.all()
     serializer_class = NoteSerializer
