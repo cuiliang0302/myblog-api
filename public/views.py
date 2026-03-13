@@ -22,7 +22,7 @@ from public.serializers import DemoUserSerializer, DemoProvinceSerializer
 # from public.tools import Tencent
 from loguru import logger
 from rest_framework.filters import OrderingFilter
-from public.utils import MyPageNumber
+from public.utils import MyPageNumber, cache_key
 
 
 def defined(request):
@@ -70,11 +70,10 @@ class BackgroundImageAPIView(APIView):
 
     @staticmethod
     def get(request):
-        if cache.get("img_url"):
-            # print("Redis有数据，直接用")
-            img_url = cache.get("img_url")
+        key = cache_key("BackgroundImageAPIView", "img_url")
+        if cache.get(key):
+            img_url = cache.get(key)
         else:
-            # print("Redis过期了，重新取")
             base_url = 'https://cn.bing.com'
             response = httpx.get(base_url + '/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=zh-CN')
             if response.status_code == 200:
@@ -84,13 +83,12 @@ class BackgroundImageAPIView(APIView):
             else:
                 img_url = settings.BGI_URL
             logger.info("图片下载地址:{}".format(img_url))
-            # 计算离第二天0点过期时间
             now = datetime.now()
             today_begin = datetime(now.year, now.month, now.day, 0, 0, 0)
             tomorrow_begin = today_begin + timedelta(days=1)
             next_seconds = (tomorrow_begin - now).seconds + 1
-            cache.set("img_url", img_url, timeout=next_seconds)
-            img_url = cache.get("img_url")
+            cache.set(key, img_url, timeout=next_seconds)
+            img_url = cache.get(key)
         return Response({'url': img_url}, status=status.HTTP_200_OK)
 
 

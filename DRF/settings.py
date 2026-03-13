@@ -179,7 +179,10 @@ REST_FRAMEWORK_EXTENSIONS = {
     # 默认缓存时间
     'DEFAULT_CACHE_RESPONSE_TIMEOUT': env.int('DEFAULT_CACHE_RESPONSE_TIMEOUT'),
     # 缓存存储
-    'DEFAULT_USE_CACHE': 'default'
+    'DEFAULT_USE_CACHE': 'default',
+    # 使用自定义 key 构造器，使 list/retrieve 缓存生效且 Redis key 带视图名便于管理
+    'DEFAULT_OBJECT_CACHE_KEY_FUNC': 'public.utils.default_object_cache_key_func',
+    'DEFAULT_LIST_CACHE_KEY_FUNC': 'public.utils.default_list_cache_key_func',
 }
 # Django使用redis缓存配置
 if env.cache(default=False):

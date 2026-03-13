@@ -16,6 +16,7 @@ from alipay.aop.api.constant.ParamConstants import *
 from alipay.aop.api.response.AlipaySystemOauthTokenResponse import AlipaySystemOauthTokenResponse
 from alipay.aop.api.response.AlipayUserInfoShareResponse import AlipayUserInfoShareResponse
 from django.core.cache import cache
+from public.utils import cache_key
 from django.core.mail import EmailMultiAlternatives
 from django.conf import settings
 from django.utils import timezone
@@ -57,11 +58,13 @@ class AuthCode:
     def make_code(self):
         for i in range(6):
             self.code = self.code + str(random.randint(0, 9))
-        cache.set(self.contact, self.code, timeout=1800)
+        key = cache_key("AuthCode", "verify", self.contact)
+        cache.set(key, self.code, timeout=1800)
 
     def check_code(self, code):
         try:
-            cache_code = cache.get(self.contact)
+            key = cache_key("AuthCode", "verify", self.contact)
+            cache_code = cache.get(key)
             if cache_code != code:
                 print("邮件验证码错误！")
                 return False
