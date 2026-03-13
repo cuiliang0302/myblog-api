@@ -1,12 +1,27 @@
 import multiprocessing
 
-bind = "0.0.0.0:8000"  # 绑定的ip与端口
-backlog = 512  # 监听队列数量，64-2048
-worker_class = 'sync'  # 使用gevent模式，还可以使用sync 模式，默认的是sync模式
-workers = 2  # multiprocessing.cpu_count()    #进程数
-threads = 2 # multiprocessing.cpu_count() #指定每个进程开启的线程数
-loglevel = 'info'  # 日志级别，这个日志级别指的是错误日志的级别，而访问日志的级别无法设置
+bind = "0.0.0.0:8000"
+backlog = 512
+
+# worker配置
+worker_class = 'gthread'
+workers = 2 * multiprocessing.cpu_count() + 1  # 2核机器 = 5
+threads = 4                                      # 总并发 = 5 * 4 = 20
+
+# 内存保护
+max_requests = 2000        # 每个worker处理2000次请求后自动重启，防止内存泄漏
+max_requests_jitter = 200  # 重启时间随机抖动，避免所有worker同时重启
+
+# 超时配置
+timeout = 30        # worker超时时间，博客接口30s足够
+graceful_timeout = 30  # 收到重启信号后，等待请求处理完成的时间
+keepalive = 5       # 客户端连接保持时间（秒），减少TCP握手开销
+
+# 日志配置
+loglevel = 'info'
 access_log_format = '%(t)s %(p)s %(h)s "%(r)s" %(s)s %(L)s %(b)s %(f)s "%(a)s"'
-accesslog = "-"  # 访问日志文件，"-" 表示标准输出
-errorlog = "-"  # 错误日志文件，"-" 表示标准输出
-# proc_name = 'fof_api'  # 进程名
+accesslog = "-"   # 标准输出，适合 Docker / systemd 收集日志
+errorlog = "-"
+
+# 进程命名（ps aux 时便于识别）
+proc_name = 'blog_api'
